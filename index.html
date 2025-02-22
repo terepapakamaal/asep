@@ -90,30 +90,38 @@
 <body>
     <div class="container">
         <!-- Login Form -->
-        <div class="form-container" id="login-form">
-            <h2>Login</h2>
-            <form id="loginForm">
-                <input type="email" id="login-email" placeholder="Email" required>
-                <input type="password" id="login-password" placeholder="Password" required>
-                <div id="login-captcha" class="cf-turnstile" data-sitekey="0x4AAAAAAA-HUBpovgMUuiTc"></div>
-                <div id="login-error" class="error-message"></div>
-                <button type="submit">Login</button>
-            </form>
-            <p>Don't have an account? <span class="toggle-link" onclick="showSignup()">Sign up here</span></p>
-        </div>
+       <div class="form-container" id="login-form">
+  <h2>Login</h2>
+  <form id="loginForm">
+    <input type="email" id="login-email" placeholder="Email" required>
+    <input type="password" id="login-password" placeholder="Password" required>
+    <div id="login-error" class="error-message"></div>
+    <!-- Add CAPTCHA to the submit button -->
+    <button type="submit" class="cf-turnstile-submit" 
+            data-sitekey="0x4AAAAAAA-HUBpovgMUuiTc" 
+            data-callback="onLoginCaptchaSuccess">
+      Login
+    </button>
+  </form>
+  <p>Don't have an account? <span class="toggle-link" onclick="showSignup()">Sign up here</span></p>
+</div>
 
-        <!-- Signup Form -->
-        <div class="form-container hidden" id="signup-form">
-            <h2>Sign Up</h2>
-            <form id="signupForm">
-                <input type="email" id="signup-email" placeholder="Email" required>
-                <input type="password" id="signup-password" placeholder="Password (6+ characters)" required>
-                <div id="signup-captcha" class="cf-turnstile" data-sitekey="0x4AAAAAAA-HUBpovgMUuiTc"></div>
-                <div id="signup-error" class="error-message"></div>
-                <button type="submit">Create Account</button>
-            </form>
-            <p>Already have an account? <span class="toggle-link" onclick="showLogin()">Login here</span></p>
-        </div>
+<!-- Signup Form -->
+<div class="form-container hidden" id="signup-form">
+  <h2>Sign Up</h2>
+  <form id="signupForm">
+    <input type="email" id="signup-email" placeholder="Email" required>
+    <input type="password" id="signup-password" placeholder="Password (6+ characters)" required>
+    <div id="signup-error" class="error-message"></div>
+    <!-- Add CAPTCHA to the submit button -->
+    <button type="submit" class="cf-turnstile-submit" 
+            data-sitekey="0x4AAAAAAA-HUBpovgMUuiTc" 
+            data-callback="onSignupCaptchaSuccess">
+      Create Account
+    </button>
+  </form>
+  <p>Already have an account? <span class="toggle-link" onclick="showLogin()">Login here</span></p>
+</div>
     </div>
 
      <script>
@@ -138,40 +146,66 @@
         }
 
         // CAPTCHA tokens storage
-        let loginCaptchaToken = null;
-        let signupCaptchaToken = null;
+       // Track CAPTCHA tokens
+let loginCaptchaToken = null;
+let signupCaptchaToken = null;
 
-        // Inside the DOMContentLoaded event listener
+// Initialize CAPTCHA for all buttons with class 'cf-turnstile-submit'
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize login CAPTCHA (visible)
-    turnstile.render('#login-captcha', {
-        sitekey: '0x4AAAAAAA-HUBpovgMUuiTc',
-        callback: (token) => { loginCaptchaToken = token; }
-    });
-
-    // Initialize signup CAPTCHA with execution: 'execute' (hidden)
-    turnstile.render('#signup-captcha', {
-        sitekey: '0x4AAAAAAA-HUBpovgMUuiTc',
-        callback: (token) => { signupCaptchaToken = token; },
-        execution: 'execute' // Pause rendering until executed
-    });
+  turnstile.render('.cf-turnstile-submit', {
+    sitekey: '0x4AAAAAAA-HUBpovgMUuiTc',
+    execution: 'execute', // Delay rendering until button click
+  });
 });
 
-// Modify showSignup() function
-function showSignup() {
-    document.getElementById('login-form').classList.add('hidden');
-    document.getElementById('signup-form').classList.remove('hidden');
-    document.getElementById('signupForm').reset();
-    turnstile.reset('#signup-captcha');
-    signupCaptchaToken = null;
-
-    // Execute the paused CAPTCHA now that the form is visible
-    turnstile.execute('#signup-captcha');
+// Login CAPTCHA success callback
+async function onLoginCaptchaSuccess(token) {
+  loginCaptchaToken = token;
+  await handleLogin(); // Proceed with login after CAPTCHA
 }
 
-        // Form event listeners
-        document.getElementById('loginForm').addEventListener('submit', login);
-        document.getElementById('signupForm').addEventListener('submit', signup);
+// Signup CAPTCHA success callback
+async function onSignupCaptchaSuccess(token) {
+  signupCaptchaToken = token;
+  await handleSignup(); // Proceed with signup after CAPTCHA
+}
+
+// Handle login after CAPTCHA verification
+async function handleLogin() {
+  const email = document.getElementById('login-email').value;
+  const password = document.getElementById('login-password').value;
+
+  try {
+    await auth.signInWithEmailAndPassword(email, password);
+    window.location.href = 'homepage.html';
+  } catch (error) {
+    showError('login-error', getErrorMessage(error));
+    // Reset CAPTCHA on failure
+    turnstile.reset('#loginForm .cf-turnstile-submit');
+    loginCaptchaToken = null;
+  }
+}
+
+// Handle signup after CAPTCHA verification
+async function handleSignup() {
+  const email = document.getElementById('signup-email').value;
+  const password = document.getElementById('signup-password').value;
+
+  try {
+    await auth.createUserWithEmailAndPassword(email, password);
+    alert('Account created successfully! Please login.');
+    showLogin();
+  } catch (error) {
+    showError('signup-error', getErrorMessage(error));
+    // Reset CAPTCHA on failure
+    turnstile.reset('#signupForm .cf-turnstile-submit');
+    signupCaptchaToken = null;
+  }
+}
+
+// Remove old form submission event listeners (original code)
+// document.getElementById('loginForm').removeEventListener('submit', login);
+// document.getElementById('signupForm').removeEventListener('submit', signup);
 
         async function login(e) {
             e.preventDefault();
