@@ -8,12 +8,13 @@
     <<!-- link href="styles/login.css" rel="stylesheet"> -->
         <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
         <style>
-            body {
+body {
             margin: 0;
             font-family: Arial, sans-serif;
             background: url('https://t3.ftcdn.net/jpg/08/04/22/42/240_F_804224219_QdNW7DlskOWvDzon8xM4LQuxX62bdvdm.jpg') no-repeat center center fixed;
             background-size: cover;
         }
+
         .container {
             display: flex;
             justify-content: center;
@@ -21,20 +22,30 @@
             height: 100vh;
             backdrop-filter: blur(5px);
         }
+
         .form-container {
             background: rgba(255, 255, 255, 0.9);
-            padding: 20px;
+            padding: 25px;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             text-align: center;
-            width: 320px; /* Increased width */
+            width: 340px;
         }
-        /* Added CSS for Turnstile container */
+
+        /* Turnstile-specific fixes */
         .cf-turnstile {
             margin: 15px 0;
-            min-height: 65px; /* Ensure enough space */
-            display: flex;
+            min-height: 85px; /* Increased minimum height */
+            display: flex !important;
             justify-content: center;
+            align-items: center;
+            width: 100% !important;
+        }
+
+        /* Ensure iframe visibility */
+        iframe[data-turnstile] {
+            width: 100% !important;
+            height: 85px !important;
         }
 
 .form-container h2 {
@@ -119,7 +130,7 @@
             <form action="homepage.html" method="get" target="_self">
                 <input type="text" id="username" placeholder="Username" required>
                 <input type="password" id="password" placeholder="Password" required>
-                 <div class="cf-turnstile" data-sitekey="your-site-key"></div>
+                 <div class="cf-turnstile" data-sitekey="0x4AAAAAAA-HUBpovgMUuiTc"></div>
                 <button type="submit">Login</button>
             </form>
             <p>Don't have an account? <span class="toggle-link" onclick="showSignup()">Sign up here</span></p>
@@ -141,23 +152,38 @@
 
 
 
-    <script>
-        function showSignup() {
-            document.getElementById('login-form').style.display = 'none';
-            document.getElementById('signup-form').style.display = 'block';
-            // Reinitialize Turnstile when switching forms
+   <script>
+        // Initialize Turnstile on first load
+        document.addEventListener('DOMContentLoaded', function() {
             if (typeof turnstile !== 'undefined') {
                 turnstile.render('.cf-turnstile');
             }
+        });
+
+        function showSignup() {
+            document.getElementById('login-form').style.display = 'none';
+            const signupForm = document.getElementById('signup-form');
+            signupForm.style.display = 'block';
+            
+            // Reinitialize Turnstile after form becomes visible
+            setTimeout(() => {
+                if (typeof turnstile !== 'undefined') {
+                    turnstile.render(signupForm.querySelector('.cf-turnstile'));
+                }
+            }, 50);
         }
 
         function showLogin() {
             document.getElementById('signup-form').style.display = 'none';
-            document.getElementById('login-form').style.display = 'block';
-            // Reinitialize Turnstile when switching forms
-            if (typeof turnstile !== 'undefined') {
-                turnstile.render('.cf-turnstile');
-            }
+            const loginForm = document.getElementById('login-form');
+            loginForm.style.display = 'block';
+            
+            // Reinitialize Turnstile after form becomes visible
+            setTimeout(() => {
+                if (typeof turnstile !== 'undefined') {
+                    turnstile.render(loginForm.querySelector('.cf-turnstile'));
+                }
+            }, 50);
         }
     </script>
 </body>
