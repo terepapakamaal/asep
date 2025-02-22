@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Land Transformation</title>
+    <link rel="stylesheet" href="styles/land.css">
+</head>
+<body>
+    <header>
+        <h1>Land Transformation Portal</h1>
+    </header>
+
+    <main>
+        <section class="form-section">
+            <h2>Fill the Form for Land Transformation</h2>
+            <form id="land-form" onsubmit="handleSubmit(event)">
+                <label for="name">Farmer's Name:</label>
+                <input type="text" id="name" name="name" placeholder="Enter your name" required>
+
+                <label for="land">No. of Acres of Land:</label>
+                <input type="number" id="land" name="land" placeholder="Enter land area in acres" required>
+
+                <label for="water">Nearby Water Availability:</label>
+                <select id="water" name="water" required>
+                    <option value="" disabled selected>Select an option</option>
+                    <option value="River">River</option>
+                    <option value="Well">Well</option>
+                    <option value="Pond">Pond</option>
+                    <option value="None">None</option>
+                </select>
+
+                <button type="submit">Submit</button>
+            </form>
+        </section>
+
+        <section class="response-section" id="response-section" style="display: none;">
+            <h2>Thank You!</h2>
+            <p>Your response has been recorded, and soon you will be consulted by our experts.</p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Land Transformation Portal. All rights reserved.</p>
+    </footer>
+
+    <script>
+        function handleSubmit(event) {
+            event.preventDefault();
+            document.getElementById("land-form").style.display = "none";
+            document.getElementById("response-section").style.display = "block";
+        }
+    </script>
+</body>
+</html>

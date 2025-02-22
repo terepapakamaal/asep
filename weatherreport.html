@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Report</title>
+    <link rel="stylesheet" href="styles/weather.css">
+</head>
+<body>
+    <header id="main-header">
+        <h1>Weather Report Portal</h1>
+    </header>
+    <script>
+        async function getWeather() {
+            const cityName = document.getElementById('city-name').value;
+            const apiKey = '2ee0185414faa264f68fbf7617d0957e'; 
+            const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=${apiKey}&units=metric`;
+
+            const response = await fetch(apiUrl);
+            if (response.ok) {
+      const data = await response.json();
+      const weatherDiv = document.getElementById('weather');
+      weatherDiv.innerHTML = `
+        <div class="card">
+          <div class="card-body">
+            <h3 class="card-title">Weather in ${cityName}</h3>
+            <p class="card-text">Temperature: ${data.main.temp}°C</p>
+            <p class="card-text">Weather: ${data.weather[0].description}</p>
+            <p class="card-text">Humidity: ${data.main.humidity}%</p>
+            <p class="card-text">Wind Speed: ${data.wind.speed} m/s</p>
+            <p class="card-text">Pressure: ${data.main.pressure} hPa</p>
+            <p class="card-text">Sunrise: ${new Date(data.sys.sunrise * 1000).toLocaleTimeString()}</p>
+            <p class="card-text">Sunset: ${new Date(data.sys.sunset * 1000).toLocaleTimeString()}</p>
+            <p class="card-text">Probability of Rain: ${data.rain && data.rain['1h'] ? data.rain['1h'] : '0'} mm</p>
+          </div>
+        </div>
+      `;
+    } else {
+      const weatherDiv = document.getElementById('weather');
+      weatherDiv.innerHTML = '<p>City not found. Please try again later.</p>';
+    }
+    }
+    </script>
+    <main>
+        <section class="input-section">
+            <h2>Enter City Name</h2>
+            <form id="weather-form">
+                <label for="city-name">City Name:</label>
+                <input type="text" id="city-name" name="city-name" placeholder="Enter City Name" required>
+                <button type="button" onclick="getWeather()">Submit</button>
+            </form>
+        </section>
+
+        <section class="output-section">
+            <div id="weather">Enter a city name and click submit to view the weather report.</div>
+            <p id="suggestion"></p>
+        </section>
+    </main>
+
+    <footer>
+        <p></p>
+    </footer>
+</body>
+</html>
+

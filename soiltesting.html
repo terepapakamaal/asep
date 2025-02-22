@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soil Testing</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-image: url('soil-background.jpg'); /* Add your soil-related background image */
+            background-size: cover;
+            background-position: center;
+            font-family: Arial, sans-serif;
+        }
+
+        header {
+            background: rgba(139, 69, 19, 0.8);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 2rem;
+        }
+
+        main {
+            max-width: 800px;
+            margin: 20px auto;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .input-section {
+            margin-bottom: 20px;
+        }
+
+        .input-section h2 {
+            color: #4caf50;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+        }
+
+        .output-section {
+            margin-top: 20px;
+        }
+
+        .output-section h3 {
+            color: #4caf50;
+            font-size: 1.5rem;
+        }
+
+        .output-section p {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #555;
+        }
+
+        footer {
+            background: rgba(139, 69, 19, 0.8);
+            color: white;
+            text-align: center;
+            padding: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Soil Testing Portal</h1>
+    </header>
+
+    <main class="container">
+        <div class="input-section text-center">
+            <h2>Enter Soil pH Level</h2>
+            <div class="input-group mb-3 w-75 mx-auto">
+                <input type="number" id="phInput" class="form-control" placeholder="Enter soil pH level (0-14)" min="0" max="14" step="0.1">
+                <button id="submitBtn" class="btn btn-success">Get Crop Info</button>
+            </div>
+        </div>
+
+        <div class="output-section text-center" id="cropInfo"></div>
+    </main>
+
+    <footer>
+        <p>© 2023 Soil Testing Portal</p>
+    </footer>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const submitBtn = document.getElementById('submitBtn');
+            const cropInfoDiv = document.getElementById('cropInfo');
+
+            submitBtn.addEventListener('click', function() {
+                const phInput = parseFloat(document.getElementById('phInput').value);
+                let cropInfo = '';
+
+                if (phInput >= 6 && phInput <= 7) {
+                    cropInfo = `
+                        <h3>Suitable Crops</h3>
+                        <p>Cabbage, Cauliflower, Carrots, Peas, Beans, Spinach, Tomatoes, Cucumbers, Zucchini, Onions, Garlic, Parsley, Radishes</p>
+                        <p>Herbs like basil, oregano, thyme, and rosemary</p>
+                        <h4>Details</h4>
+                        <ul class="list-unstyled">
+                            <li>Water Requirement: Moderate</li>
+                            <li>Temperature: 15-25°C</li>
+                            <li>Humidity: Moderate</li>
+                            <li>Duration: 90-120 days</li>
+                            <li>Yield: 3-4 tons/ha</li>
+                            <li>Fertilizer: Nitrogen, Phosphorus, Potassium</li>
+                        </ul>
+                    `;
+                } else if (phInput >= 5.5 && phInput < 6.0) {
+                    cropInfo = `
+                        <h3>Suitable Crops</h3>
+                        <p>Rice, Soybeans, Peanuts, Beans, Corn, Garlic, Kale, Peppers, Pumpkins, Squash, Tomatoes, Watermelons, Turnips, Rutabagas, Melons</p>
+                        <h4>Details</h4>
+                        <ul class="list-unstyled">
+                            <li>Water Requirement: High</li>
+                            <li>Temperature: 20-30°C</li>
+                            <li>Humidity: High</li>
+                            <li>Duration: 120-150 days</li>
+                            <li>Yield: 4-5 tons/ha</li>
+                            <li>Fertilizer: Nitrogen, Phosphorus, Potassium</li>
+                        </ul>
+                    `;
+                } else if (phInput >= 7 && phInput <= 8) {
+                    cropInfo = `
+                        <h3>Suitable Crops</h3>
+                        <p>Beets, Cabbage, Cauliflower, Celery, Carrots, Lettuce, Parsley, Spinach, Garlic, Clover, Sugar Beets</p>
+                        <h4>Details</h4>
+                        <ul class="list-unstyled">
+                            <li>Water Requirement: Low</li>
+                            <li>Temperature: 10-20°C</li>
+                            <li>Humidity: Low</li>
+                            <li>Duration: 60-90 days</li>
+                            <li>Yield: 2-3 tons/ha</li>
+                            <li>Fertilizer: Nitrogen, Phosphorus, Potassium</li>
+                        </ul>
+                    `;
+                } else {
+                    cropInfo = '<h3>Suitable Crops</h3><p>No suitable crops found for this pH level.</p>';
+                }
+
+                cropInfoDiv.innerHTML = cropInfo;
+            });
+        });
+    </script>
+</body>
+</html>
