@@ -140,8 +140,8 @@
     </div>
 
     <script>
-        // Firebase configuration
-       const firebaseConfig = {
+    // Firebase configuration (use your actual config)
+    const firebaseConfig = {
         apiKey: "AIzaSyATODPEPLVaVg_Alrdet9flGaUpIOc8HD0",
         authDomain: "asep-bbc34.firebaseapp.com",
         projectId: "asep-bbc34",
@@ -150,138 +150,105 @@
         appId: "1:649819916593:web:7544bda86e7bae47f24810"
     };
 
-        // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        let confirmationResult; // To store OTP confirmation result
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    let confirmationResult;
+    let captchaWidget;
 
-        // Toggle between authentication methods
-        function showEmailLogin() {
-            document.querySelectorAll('.form-container').forEach(f => f.classList.add('hidden'));
-            document.getElementById('email-login-form').classList.remove('hidden');
-        }
-
-        function showPhoneLogin() {
-            document.querySelectorAll('.form-container').forEach(f => f.classList.add('hidden'));
-            document.getElementById('phone-login-form').classList.remove('hidden');
-        }
-
-        function showSignup() {
-            document.querySelectorAll('.form-container').forEach(f => f.classList.add('hidden'));
-            document.getElementById('signup-form').classList.remove('hidden');
-        }
-
-        // Email/Password Login
-        async function emailLogin() {
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            const errorContainer = document.getElementById('login-error');
-
-            errorContainer.textContent = '';
-
-            // Verify CAPTCHA
-            const captchaResponse = document.querySelector('#email-login-form .cf-turnstile iframe').getAttribute('data-turnstile-response');
-            if (!captchaResponse) {
-                errorContainer.textContent = 'Please complete the CAPTCHA.';
-                return;
+    // Initialize CAPTCHA
+    document.addEventListener('DOMContentLoaded', function() {
+        captchaWidget = turnstile.render('.cf-turnstile', {
+            sitekey: '0x4AAAAAAA-HUBpovgMUuiTc',
+            callback: function(token) {
+                console.log('CAPTCHA verified:', token);
             }
+        });
+    });
 
-            try {
-                const userCredential = await auth.signInWithEmailAndPassword(email, password);
-                alert('Login successful!');
-                window.location.href = 'homepage.html'; // Redirect after login
-            } catch (error) {
-                let errorMessage = 'Login failed. Please try again.';
-                switch (error.code) {
-                    case 'auth/user-not-found':
-                        errorMessage = 'User not found. Please sign up first.';
-                        break;
-                    case 'auth/wrong-password':
-                        errorMessage = 'Incorrect password. Please try again.';
-                        break;
-                    case 'auth/too-many-requests':
-                        errorMessage = 'Too many attempts. Try again later.';
-                        break;
-                }
-                errorContainer.textContent = errorMessage;
-            }
+    // Email/Password Login
+    async function emailLogin() {
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        const errorContainer = document.getElementById('login-error');
+        errorContainer.textContent = '';
+
+        try {
+            const userCredential = await auth.signInWithEmailAndPassword(email, password);
+            window.location.href = 'homepage.html'; // Redirect on success
+        } catch (error) {
+            errorContainer.textContent = `Error: ${error.message}`;
         }
+    }
 
-        // Phone Number Login: Send OTP
-        async function sendOTP() {
-            const phoneNumber = document.getElementById('login-phone').value;
-            const errorContainer = document.getElementById('phone-login-error');
+    // Phone Number Login: Send OTP
+    async function sendOTP() {
+        const phoneNumber = document.getElementById('login-phone').value;
+        const errorContainer = document.getElementById('phone-login-error');
+        errorContainer.textContent = '';
 
-            errorContainer.textContent = '';
-
-            // Verify CAPTCHA
-            const captchaResponse = document.querySelector('#phone-login-form .cf-turnstile iframe').getAttribute('data-turnstile-response');
-            if (!captchaResponse) {
-                errorContainer.textContent = 'Please complete the CAPTCHA.';
-                return;
-            }
-
-            try {
-                const appVerifier = new firebase.auth.RecaptchaVerifier('phone-login-form .cf-turnstile', {
-                    size: 'invisible',
-                });
-                confirmationResult = await auth.signInWithPhoneNumber(phoneNumber, appVerifier);
-                document.getElementById('otp-section').classList.remove('hidden'); // Show OTP input
-            } catch (error) {
-                errorContainer.textContent = 'Failed to send OTP. Please try again.';
-                console.error(error);
-            }
+        try {
+            const appVerifier = new firebase.auth.RecaptchaVerifier('phone-login-form .cf-turnstile', {
+                size: 'normal',
+            });
+            
+            confirmationResult = await auth.signInWithPhoneNumber(phoneNumber, appVerifier);
+            document.getElementById('otp-section').classList.remove('hidden');
+        } catch (error) {
+            errorContainer.textContent = `Error: ${error.message}`;
+            console.error(error);
         }
+    }
 
-        // Phone Number Login: Verify OTP
-        async function verifyOTP() {
-            const otp = document.getElementById('login-otp').value;
-            const errorContainer = document.getElementById('phone-login-error');
+    // Verify OTP
+    async function verifyOTP() {
+        const otp = document.getElementById('login-otp').value;
+        const errorContainer = document.getElementById('phone-login-error');
+        errorContainer.textContent = '';
 
-            errorContainer.textContent = '';
-
-            try {
-                const userCredential = await confirmationResult.confirm(otp);
-                alert('Login successful!');
-                window.location.href = 'homepage.html'; // Redirect after login
-            } catch (error) {
-                errorContainer.textContent = 'Invalid OTP. Please try again.';
-            }
+        try {
+            await confirmationResult.confirm(otp);
+            window.location.href = 'homepage.html'; // Redirect on success
+        } catch (error) {
+            errorContainer.textContent = `Error: ${error.message}`;
         }
+    }
 
-        // Signup with Email/Password
-        async function signup() {
-            const email = document.getElementById('signup-email').value;
-            const password = document.getElementById('signup-password').value;
-            const errorContainer = document.getElementById('signup-error');
+    // Signup
+    async function signup() {
+        const email = document.getElementById('signup-email').value;
+        const password = document.getElementById('signup-password').value;
+        const errorContainer = document.getElementById('signup-error');
+        errorContainer.textContent = '';
 
-            errorContainer.textContent = '';
-
-            // Verify CAPTCHA
-            const captchaResponse = document.querySelector('#signup-form .cf-turnstile iframe').getAttribute('data-turnstile-response');
-            if (!captchaResponse) {
-                errorContainer.textContent = 'Please complete the CAPTCHA.';
-                return;
-            }
-
-            try {
-                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-                alert('Signup successful! Please login.');
-                showEmailLogin(); // Switch to login form
-            } catch (error) {
-                let errorMessage = 'Signup failed. Please try again.';
-                switch (error.code) {
-                    case 'auth/email-already-in-use':
-                        errorMessage = 'Email already in use. Please login.';
-                        break;
-                    case 'auth/weak-password':
-                        errorMessage = 'Password is too weak. Use at least 6 characters.';
-                        break;
-                }
-                errorContainer.textContent = errorMessage;
-            }
+        try {
+            await auth.createUserWithEmailAndPassword(email, password);
+            alert('Signup successful! Please login.');
+            showEmailLogin();
+        } catch (error) {
+            errorContainer.textContent = `Error: ${error.message}`;
         }
-    </script>
+    }
+
+    // Toggle forms
+    function showEmailLogin() {
+        document.querySelectorAll('.form-container').forEach(f => f.classList.add('hidden'));
+        document.getElementById('email-login-form').classList.remove('hidden');
+        turnstile.reset(captchaWidget);
+    }
+
+    function showPhoneLogin() {
+        document.querySelectorAll('.form-container').forEach(f => f.classList.add('hidden'));
+        document.getElementById('phone-login-form').classList.remove('hidden');
+        turnstile.reset(captchaWidget);
+    }
+
+    function showSignup() {
+        document.querySelectorAll('.form-container').forEach(f => f.classList.add('hidden'));
+        document.getElementById('signup-form').classList.remove('hidden');
+        turnstile.reset(captchaWidget);
+    }
+</script>
 </body>
 
 </html>
