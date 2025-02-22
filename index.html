@@ -254,13 +254,43 @@ body {
         }
 
         // Firebase login function
-        function login() {
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
+       function login() {
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
 
-            // Add Firebase login logic here
-            console.log('Login with:', email, password);
-        }
+    // Firebase login logic
+    auth.signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            // Login successful
+            alert('Login successful!');
+            // Redirect to another page or perform other actions
+            window.location.href = 'dashboard.html'; // Example redirect
+        })
+        .catch((error) => {
+            // Handle errors
+            let errorMessage = 'Login failed. Please try again.';
+
+            switch (error.code) {
+                case 'auth/user-not-found':
+                    errorMessage = 'User not found. Please check your email or sign up.';
+                    break;
+                case 'auth/wrong-password':
+                    errorMessage = 'Incorrect password. Please try again.';
+                    break;
+                case 'auth/invalid-email':
+                    errorMessage = 'Invalid email address. Please enter a valid email.';
+                    break;
+                case 'auth/too-many-requests':
+                    errorMessage = 'Too many failed attempts. Please try again later.';
+                    break;
+                default:
+                    errorMessage = error.message; // Generic error message
+            }
+
+            // Display error message to the user
+            alert(errorMessage);
+        });
+}
 
         // Firebase signup function
         function signup() {
