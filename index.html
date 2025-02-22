@@ -16,48 +16,79 @@
             font-family: Arial, sans-serif;
             background: url('https://t3.ftcdn.net/jpg/08/04/22/42/240_F_804224219_QdNW7DlskOWvDzon8xM4LQuxX62bdvdm.jpg') no-repeat center center fixed;
             background-size: cover;
-            min-height: 100vh;
         }
 
         .container {
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            height: 100vh;
             backdrop-filter: blur(5px);
         }
 
         .form-container {
             background: rgba(255, 255, 255, 0.9);
-            padding: 25px;
+            padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             text-align: center;
-            width: 340px;
-            margin: 20px;
+            width: 300px;
         }
 
-        .auth-method-toggle {
-            margin: 15px 0;
-            color: #3498db;
+        .form-container h2 {
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .form-container form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-container input {
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .form-container button {
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 5px;
             cursor: pointer;
+        }
+
+        .form-container button:hover {
+            background-color: #2ecc71;
+        }
+
+        .toggle-link {
+            color: #3498db;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .toggle-link:hover {
             text-decoration: underline;
+        }
+
+        .error-message {
+            color: red;
+            margin: 10px 0;
         }
 
         .cf-turnstile {
             margin: 15px 0;
-            min-height: 65px;
             display: flex;
             justify-content: center;
         }
 
         .hidden {
             display: none;
-        }
-
-        .error-message {
-            color: red;
-            margin: 10px 0;
         }
     </style>
 </head>
@@ -74,7 +105,7 @@
                 <div class="cf-turnstile" data-sitekey="0x4AAAAAAA-HUBpovgMUuiTc"></div>
                 <button type="submit">Login</button>
             </form>
-            <div class="auth-method-toggle" onclick="showPhoneLogin()">Use Phone Number Instead</div>
+            <div class="toggle-link" onclick="showPhoneLogin()">Use Phone Number Instead</div>
             <p>Don't have an account? <span class="toggle-link" onclick="showSignup()">Sign up here</span></p>
         </div>
 
@@ -90,7 +121,7 @@
                 <input type="text" id="login-otp" placeholder="Enter OTP" required>
                 <button onclick="verifyOTP()">Verify OTP</button>
             </div>
-            <div class="auth-method-toggle" onclick="showEmailLogin()">Use Email Instead</div>
+            <div class="toggle-link" onclick="showEmailLogin()">Use Email Instead</div>
         </div>
 
         <!-- Signup Form -->
@@ -111,12 +142,12 @@
     <script>
         // Firebase configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyATODPEPLVaVg_Alrdet9flGaUpIOc8HD0",
-            authDomain: "asep-bbc34.firebaseapp.com",
-            projectId: "asep-bbc34",
-            storageBucket: "asep-bbc34.firebasestorage.app",
-            messagingSenderId: "649819916593",
-            appId: "1:649819916593:web:7544bda86e7bae47f24810"
+            apiKey: "YOUR_FIREBASE_API_KEY",
+            authDomain: "YOUR_FIREBASE_AUTH_DOMAIN",
+            projectId: "YOUR_FIREBASE_PROJECT_ID",
+            storageBucket: "YOUR_FIREBASE_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_FIREBASE_MESSAGING_SENDER_ID",
+            appId: "YOUR_FIREBASE_APP_ID"
         };
 
         // Initialize Firebase
