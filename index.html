@@ -162,32 +162,38 @@
     let firebaseInitialized = false;
     let confirmationResult; // Declare confirmationResult for OTP verification
 
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize Firebase after DOM loads
-        const firebaseConfig = {
-            apiKey: "AIzaSyATODPEPLVaVg_Alrdet9flGaUpIOc8HD0",
-            authDomain: "asep-bbc34.firebaseapp.com",
-            projectId: "asep-bbc34",
-            storageBucket: "asep-bbc34.firebasestorage.app",
-            messagingSenderId: "649819916593",
-            appId: "1:649819916593:web:7544bda86e7bae47f24810"
-        };
+    const firebaseInitPromise = new Promise((resolve, reject) => {
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Firebase after DOM loads
+            const firebaseConfig = {
+                apiKey: "AIzaSyATODPEPLVaVg_Alrdet9flGaUpIOc8HD0",
+                authDomain: "asep-bbc34.firebaseapp.com",
+                projectId: "asep-bbc34",
+                storageBucket: "asep-bbc34.firebasestorage.app",
+                messagingSenderId: "649819916593",
+                appId: "1:649819916593:web:7544bda86e7bae47f24810"
+            };
 
-        const app = firebase.initializeApp(firebaseConfig);
-        auth = firebase.auth();
-        firebaseInitialized = true;
+            const app = firebase.initializeApp(firebaseConfig);
+            auth = firebase.auth();
+            firebaseInitialized = true;
 
-        // Initialize CAPTCHA after Firebase
-        turnstile.render('.cf-turnstile', {
-            sitekey: '0x4AAAAAAA-HUBpovgMUuiTc',
-            callback: function(token) {
-                console.log('CAPTCHA verified:', token);
-            }
+            // Initialize CAPTCHA after Firebase
+            turnstile.render('.cf-turnstile', {
+                sitekey: '0x4AAAAAAA-HUBpovgMUuiTc',
+                callback: function(token) {
+                    console.log('CAPTCHA verified:', token);
+                }
+            });
+
+            resolve();
         });
     });
 
     // Email/Password Login
     async function emailLogin() {
+        await firebaseInitPromise;
+
         if (!firebaseInitialized) {
             alert('Authentication system is initializing...');
             return;
@@ -206,6 +212,8 @@
 
     // Phone Number Login
     async function sendOTPLogin() {
+        await firebaseInitPromise;
+
         if (!firebaseInitialized) {
             alert('Authentication system is initializing...');
             return;
@@ -236,6 +244,8 @@
 
     // Signup with Email
     async function signup() {
+        await firebaseInitPromise;
+
         if (!firebaseInitialized) {
             alert('Authentication system is initializing...');
             return;
@@ -255,6 +265,8 @@
 
     // Signup with Phone Number
     async function sendOTPSignup() {
+        await firebaseInitPromise;
+
         if (!firebaseInitialized) {
             alert('Authentication system is initializing...');
             return;
