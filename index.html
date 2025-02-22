@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login & Signup</title>
+    <title>Email/Password Authentication</title>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-auth.js"></script>
@@ -37,16 +37,13 @@
             color: #2c3e50;
         }
 
-        .form-container form {
-            display: flex;
-            flex-direction: column;
-        }
-
         .form-container input {
             padding: 10px;
             margin: 10px 0;
             border: 1px solid #ccc;
             border-radius: 5px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .form-container button {
@@ -57,6 +54,7 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            width: 100%;
         }
 
         .form-container button:hover {
@@ -102,16 +100,16 @@
             <h2>Sign Up</h2>
             <form onsubmit="event.preventDefault(); signup();">
                 <input type="email" id="signup-email" placeholder="Email" required>
-                <input type="password" id="signup-password" placeholder="Password" required>
+                <input type="password" id="signup-password" placeholder="Password (6+ characters)" required>
                 <div id="signup-error" class="error-message"></div>
-                <button type="submit">Sign Up</button>
+                <button type="submit">Create Account</button>
             </form>
             <p>Already have an account? <span class="toggle-link" onclick="showLogin()">Login here</span></p>
         </div>
     </div>
 
     <script>
-        // Firebase configuration
+        // Firebase configuration (REPLACE WITH YOUR CONFIG)
         const firebaseConfig = {
             apiKey: "AIzaSyATODPEPLVaVg_Alrdet9flGaUpIOc8HD0",
             authDomain: "asep-bbc34.firebaseapp.com",
@@ -121,46 +119,96 @@
             appId: "1:649819916593:web:7544bda86e7bae47f24810"
         };
 
-        // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-
-        // Login function
-        async function login() {
+        // Firebase initialization
+        let auth;
+        
+        document.addEventListener('DOMContentLoaded', () => {
             try {
-                const userCredential = await auth.signInWithEmailAndPassword(
-                    document.getElementById('login-email').value,
-                    document.getElementById('login-password').value
-                );
+                const app = firebase.initializeApp(firebaseConfig);
+                auth = firebase.auth();
+                console.log("Firebase initialized successfully");
+            } catch (error) {
+                console.error("Firebase initialization error:", error);
+            }
+        });
+
+        // Authentication functions
+        async function login() {
+            if (!auth) {
+                showError('login-error', 'Authentication system is initializing...');
+                return;
+            }
+
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
                 window.location.href = 'homepage.html';
             } catch (error) {
-                document.getElementById('login-error').textContent = error.message;
+                showError('login-error', getErrorMessage(error));
             }
         }
 
-        // Signup function
         async function signup() {
+            if (!auth) {
+                showError('signup-error', 'Authentication system is initializing...');
+                return;
+            }
+
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+
             try {
-                const userCredential = await auth.createUserWithEmailAndPassword(
-                    document.getElementById('signup-email').value,
-                    document.getElementById('signup-password').value
-                );
-                alert('Signup successful! Please login.');
+                await auth.createUserWithEmailAndPassword(email, password);
+                alert('Account created successfully! Please login.');
                 showLogin();
             } catch (error) {
-                document.getElementById('signup-error').textContent = error.message;
+                showError('signup-error', getErrorMessage(error));
             }
         }
 
-        // Form switching functions
+        // Helper functions
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.textContent = message;
+            setTimeout(() => errorElement.textContent = '', 5000);
+        }
+
+        function getErrorMessage(error) {
+            switch (error.code) {
+                case 'auth/email-already-in-use':
+                    return 'Email already registered';
+                case 'auth/invalid-email':
+                    return 'Invalid email address';
+                case 'auth/weak-password':
+                    return 'Password must be at least 6 characters';
+                case 'auth/user-not-found':
+                    return 'Account not found';
+                case 'auth/wrong-password':
+                    return 'Incorrect password';
+                default:
+                    return 'Authentication failed. Please try again.';
+            }
+        }
+
+        // Form visibility control
         function showLogin() {
             document.getElementById('signup-form').classList.add('hidden');
             document.getElementById('login-form').classList.remove('hidden');
+            clearForm('signup-form');
         }
 
         function showSignup() {
             document.getElementById('login-form').classList.add('hidden');
             document.getElementById('signup-form').classList.remove('hidden');
+            clearForm('login-form');
+        }
+
+        function clearForm(formId) {
+            const form = document.getElementById(formId);
+            form.reset();
+            form.querySelector('.error-message').textContent = '';
         }
     </script>
 </body>
