@@ -154,56 +154,59 @@ body {
 
 
 
-  <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyATODPEPLVaVg_Alrdet9flGaUpIOc8HD0",
-    authDomain: "asep-bbc34.firebaseapp.com",
-    projectId: "asep-bbc34",
-    storageBucket: "asep-bbc34.firebasestorage.app",
-    messagingSenderId: "649819916593",
-    appId: "1:649819916593:web:7544bda86e7bae47f24810"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-
+ <script>
         // Initialize Turnstile on first load
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
+            // Render CAPTCHA for the login form initially
             if (typeof turnstile !== 'undefined') {
-                turnstile.render('.cf-turnstile');
+                turnstile.render('#login-captcha');
             }
         });
 
         function showSignup() {
+            // Hide login form
             document.getElementById('login-form').style.display = 'none';
+
+            // Show signup form
             const signupForm = document.getElementById('signup-form');
             signupForm.style.display = 'block';
-            
-            // Reinitialize Turnstile after form becomes visible
-            setTimeout(() => {
-                if (typeof turnstile !== 'undefined') {
-                    turnstile.render(signupForm.querySelector('.cf-turnstile'));
-                }
-            }, 50);
+
+            // Render CAPTCHA for signup form
+            if (typeof turnstile !== 'undefined') {
+                turnstile.render('#signup-captcha');
+            }
         }
 
         function showLogin() {
+            // Hide signup form
             document.getElementById('signup-form').style.display = 'none';
+
+            // Show login form
             const loginForm = document.getElementById('login-form');
             loginForm.style.display = 'block';
-            
-            // Reinitialize Turnstile after form becomes visible
-            setTimeout(() => {
-                if (typeof turnstile !== 'undefined') {
-                    turnstile.render(loginForm.querySelector('.cf-turnstile'));
-                }
-            }, 50);
+
+            // Render CAPTCHA for login form
+            if (typeof turnstile !== 'undefined') {
+                turnstile.render('#login-captcha');
+            }
+        }
+
+        // Firebase login function
+        function login() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            // Add Firebase login logic here
+            console.log('Login with:', email, password);
+        }
+
+        // Firebase signup function
+        function signup() {
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+
+            // Add Firebase signup logic here
+            console.log('Signup with:', email, password);
         }
     </script>
 </body>
