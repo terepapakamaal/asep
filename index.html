@@ -141,18 +141,33 @@
         let loginCaptchaToken = null;
         let signupCaptchaToken = null;
 
-        // Initialize CAPTCHAs
-        document.addEventListener('DOMContentLoaded', () => {
-            turnstile.render('#login-captcha', {
-                sitekey: '0x4AAAAAAA-HUBpovgMUuiTc',
-                callback: (token) => { loginCaptchaToken = token; }
-            });
+        // Inside the DOMContentLoaded event listener
+document.addEventListener('DOMContentLoaded', () => {
+    // Initialize login CAPTCHA (visible)
+    turnstile.render('#login-captcha', {
+        sitekey: '0x4AAAAAAA-HUBpovgMUuiTc',
+        callback: (token) => { loginCaptchaToken = token; }
+    });
 
-            turnstile.render('#signup-captcha', {
-                sitekey: '0x4AAAAAAA-HUBpovgMUuiTc',
-                callback: (token) => { signupCaptchaToken = token; }
-            });
-        });
+    // Initialize signup CAPTCHA with execution: 'execute' (hidden)
+    turnstile.render('#signup-captcha', {
+        sitekey: '0x4AAAAAAA-HUBpovgMUuiTc',
+        callback: (token) => { signupCaptchaToken = token; },
+        execution: 'execute' // Pause rendering until executed
+    });
+});
+
+// Modify showSignup() function
+function showSignup() {
+    document.getElementById('login-form').classList.add('hidden');
+    document.getElementById('signup-form').classList.remove('hidden');
+    document.getElementById('signupForm').reset();
+    turnstile.reset('#signup-captcha');
+    signupCaptchaToken = null;
+
+    // Execute the paused CAPTCHA now that the form is visible
+    turnstile.execute('#signup-captcha');
+}
 
         // Form event listeners
         document.getElementById('loginForm').addEventListener('submit', login);
