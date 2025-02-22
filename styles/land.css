@@ -7,7 +7,7 @@ body, h1, h2, p, form, label, input, select, button {
 
 body {
     font-family: Arial, sans-serif;
-    background-image: url('images/land-background.jpg'); /* Add a land transformation-related background image */
+    background-image: url('land-background.jpg'); /* Add a land transformation-related background image */
     background-size: cover;
     background-position: center;
     color: #333;
