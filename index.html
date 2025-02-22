@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,8 +7,6 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-auth.js"></script>
-    <!-- Cloudflare Turnstile CAPTCHA -->
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <style>
         body {
             margin: 0;
@@ -81,242 +78,90 @@
             margin: 10px 0;
         }
 
-        .cf-turnstile {
-            margin: 15px 0;
-            display: flex;
-            justify-content: center;
-        }
-
         .hidden {
             display: none;
         }
     </style>
 </head>
-
 <body>
     <div class="container">
-        <!-- Default Email/Password Login -->
-        <div class="form-container" id="email-login-form">
-            <h2>Login with Email</h2>
-            <form onsubmit="event.preventDefault(); emailLogin();">
+        <!-- Login Form -->
+        <div class="form-container" id="login-form">
+            <h2>Login</h2>
+            <form onsubmit="event.preventDefault(); login();">
                 <input type="email" id="login-email" placeholder="Email" required>
                 <input type="password" id="login-password" placeholder="Password" required>
                 <div id="login-error" class="error-message"></div>
-                <div class="cf-turnstile" data-sitekey="0x4AAAAAAA-HUBpovgMUuiTc"></div>
                 <button type="submit">Login</button>
             </form>
-            <div class="toggle-link" onclick="showPhoneLogin()">Use Phone Number Instead</div>
             <p>Don't have an account? <span class="toggle-link" onclick="showSignup()">Sign up here</span></p>
-        </div>
-
-        <!-- Phone Login -->
-        <div class="form-container hidden" id="phone-login-form">
-            <h2>Login with Phone</h2>
-            <form onsubmit="event.preventDefault(); sendOTPLogin();">
-                <input type="tel" id="login-phone" placeholder="Phone Number" required>
-                <div id="phone-login-error" class="error-message"></div>
-                <button type="submit">Send OTP</button>
-            </form>
-            <div id="otp-login-section" class="hidden">
-                <input type="text" id="login-otp" placeholder="Enter OTP" required>
-                <button onclick="verifyOTPLogin()">Verify OTP</button>
-            </div>
-            <div class="toggle-link" onclick="showEmailLogin()">Use Email Instead</div>
         </div>
 
         <!-- Signup Form -->
         <div class="form-container hidden" id="signup-form">
             <h2>Sign Up</h2>
             <form onsubmit="event.preventDefault(); signup();">
-                <input type="text" id="full-name" placeholder="Full Name" required>
                 <input type="email" id="signup-email" placeholder="Email" required>
                 <input type="password" id="signup-password" placeholder="Password" required>
                 <div id="signup-error" class="error-message"></div>
-                <div class="cf-turnstile" data-sitekey="0x4AAAAAAA-HUBpovgMUuiTc"></div>
                 <button type="submit">Sign Up</button>
             </form>
-            <p>Already have an account? <span class="toggle-link" onclick="showEmailLogin()">Login here</span></p>
-            <div class="toggle-link" onclick="showPhoneSignup()">Sign up with Phone Number Instead</div>
-        </div>
-
-        <!-- Phone Signup Form -->
-        <div class="form-container hidden" id="phone-signup-form">
-            <h2>Sign Up with Phone</h2>
-            <form onsubmit="event.preventDefault(); sendOTPSignup();">
-                <input type="tel" id="signup-phone" placeholder="Phone Number" required>
-                <div id="phone-signup-error" class="error-message"></div>
-                <button type="submit">Send OTP</button>
-            </form>
-            <div id="otp-signup-section" class="hidden">
-                <input type="text" id="signup-otp" placeholder="Enter OTP" required>
-                <button onclick="verifyOTPSignup()">Verify OTP</button>
-            </div>
-            <p>Already have an account? <span class="toggle-link" onclick="showEmailLogin()">Login here</span></p>
-            <div class="toggle-link" onclick="showSignup()">Sign up with Email Instead</div>
+            <p>Already have an account? <span class="toggle-link" onclick="showLogin()">Login here</span></p>
         </div>
     </div>
 
     <script>
-    // Firebase Initialization
-    let auth; // Declare auth at the top level
-    let firebaseInitialized = false;
-    let confirmationResult; // Declare confirmationResult for OTP verification
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyATODPEPLVaVg_Alrdet9flGaUpIOc8HD0",
+            authDomain: "asep-bbc34.firebaseapp.com",
+            projectId: "asep-bbc34",
+            storageBucket: "asep-bbc34.firebasestorage.app",
+            messagingSenderId: "649819916593",
+            appId: "1:649819916593:web:7544bda86e7bae47f24810"
+        };
 
-    const firebaseInitPromise = new Promise((resolve, reject) => {
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize Firebase after DOM loads
-            const firebaseConfig = {
-                apiKey: "AIzaSyATODPEPLVaVg_Alrdet9flGaUpIOc8HD0",
-                authDomain: "asep-bbc34.firebaseapp.com",
-                projectId: "asep-bbc34",
-                storageBucket: "asep-bbc34.firebasestorage.app",
-                messagingSenderId: "649819916593",
-                appId: "1:649819916593:web:7544bda86e7bae47f24810"
-            };
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
 
-            const app = firebase.initializeApp(firebaseConfig);
-            auth = firebase.auth();
-            firebaseInitialized = true;
-
-            // Initialize CAPTCHA after Firebase
-            turnstile.render('.cf-turnstile', {
-                sitekey: '0x4AAAAAAA-HUBpovgMUuiTc',
-                callback: function(token) {
-                    console.log('CAPTCHA verified:', token);
-                }
-            });
-
-            resolve();
-        });
-    });
-
-    // Email/Password Login
-    async function emailLogin() {
-        await firebaseInitPromise;
-
-        if (!firebaseInitialized) {
-            alert('Authentication system is initializing...');
-            return;
+        // Login function
+        async function login() {
+            try {
+                const userCredential = await auth.signInWithEmailAndPassword(
+                    document.getElementById('login-email').value,
+                    document.getElementById('login-password').value
+                );
+                window.location.href = 'homepage.html';
+            } catch (error) {
+                document.getElementById('login-error').textContent = error.message;
+            }
         }
 
-        try {
-            const user = await auth.signInWithEmailAndPassword(
-                document.getElementById('login-email').value,
-                document.getElementById('login-password').value
-            );
-            window.location.href = 'homepage.html';
-        } catch (error) {
-            document.getElementById('login-error').textContent = error.message;
-        }
-    }
-
-    // Phone Number Login
-    async function sendOTPLogin() {
-        await firebaseInitPromise;
-
-        if (!firebaseInitialized) {
-            alert('Authentication system is initializing...');
-            return;
+        // Signup function
+        async function signup() {
+            try {
+                const userCredential = await auth.createUserWithEmailAndPassword(
+                    document.getElementById('signup-email').value,
+                    document.getElementById('signup-password').value
+                );
+                alert('Signup successful! Please login.');
+                showLogin();
+            } catch (error) {
+                document.getElementById('signup-error').textContent = error.message;
+            }
         }
 
-        try {
-            const phoneNumber = document.getElementById('login-phone').value;
-            const appVerifier = new firebase.auth.RecaptchaVerifier('phone-login-form .cf-turnstile', {
-                size: 'normal'
-            });
-            
-            confirmationResult = await auth.signInWithPhoneNumber(phoneNumber, appVerifier);
-            document.getElementById('otp-login-section').classList.remove('hidden');
-        } catch (error) {
-            document.getElementById('phone-login-error').textContent = error.message;
-        }
-    }
-
-    // Verify OTP for Login
-    async function verifyOTPLogin() {
-        try {
-            await confirmationResult.confirm(document.getElementById('login-otp').value);
-            window.location.href = 'homepage.html';
-        } catch (error) {
-            document.getElementById('phone-login-error').textContent = error.message;
-        }
-    }
-
-    // Signup with Email
-    async function signup() {
-        await firebaseInitPromise;
-
-        if (!firebaseInitialized) {
-            alert('Authentication system is initializing...');
-            return;
+        // Form switching functions
+        function showLogin() {
+            document.getElementById('signup-form').classList.add('hidden');
+            document.getElementById('login-form').classList.remove('hidden');
         }
 
-        try {
-            await auth.createUserWithEmailAndPassword(
-                document.getElementById('signup-email').value,
-                document.getElementById('signup-password').value
-            );
-            alert('Signup successful! Please login.');
-            showEmailLogin();
-        } catch (error) {
-            document.getElementById('signup-error').textContent = error.message;
+        function showSignup() {
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('signup-form').classList.remove('hidden');
         }
-    }
-
-    // Signup with Phone Number
-    async function sendOTPSignup() {
-        await firebaseInitPromise;
-
-        if (!firebaseInitialized) {
-            alert('Authentication system is initializing...');
-            return;
-        }
-
-        try {
-            const phoneNumber = document.getElementById('signup-phone').value;
-            const appVerifier = new firebase.auth.RecaptchaVerifier('phone-signup-form .cf-turnstile', {
-                size: 'normal'
-            });
-            
-            confirmationResult = await auth.signInWithPhoneNumber(phoneNumber, appVerifier);
-            document.getElementById('otp-signup-section').classList.remove('hidden');
-        } catch (error) {
-            document.getElementById('phone-signup-error').textContent = error.message;
-        }
-    }
-
-    // Verify OTP for Signup
-    async function verifyOTPSignup() {
-        try {
-            await confirmationResult.confirm(document.getElementById('signup-otp').value);
-            alert('Signup successful! Please login.');
-            showEmailLogin();
-        } catch (error) {
-            document.getElementById('phone-signup-error').textContent = error.message;
-        }
-    }
-
-    // Form switching functions
-    function showEmailLogin() {
-        document.querySelectorAll('.form-container').forEach(f => f.classList.add('hidden'));
-        document.getElementById('email-login-form').classList.remove('hidden');
-    }
-
-    function showPhoneLogin() {
-        document.querySelectorAll('.form-container').forEach(f => f.classList.add('hidden'));
-        document.getElementById('phone-login-form').classList.remove('hidden');
-    }
-
-    function showSignup() {
-        document.querySelectorAll('.form-container').forEach(f => f.classList.add('hidden'));
-        document.getElementById('signup-form').classList.remove('hidden');
-    }
-
-    function showPhoneSignup() {
-        document.querySelectorAll('.form-container').forEach(f => f.classList.add('hidden'));
-        document.getElementById('phone-signup-form').classList.remove('hidden');
-    }
-</script>
+    </script>
 </body>
-
 </html>
