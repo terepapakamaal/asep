@@ -7,6 +7,7 @@
     <!-- Firebase SDK (use compat versions) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <style>
     body {
         margin: 0;
@@ -31,6 +32,11 @@
         text-align: center;
         width: 300px;
     }
+        .cf-turnstile {
+            margin: 15px 0;
+            display: flex;
+            justify-content: center;
+        }
 
     .form-container h2 {
         margin-bottom: 20px;
@@ -89,6 +95,7 @@
             <form id="loginForm">
                 <input type="email" id="login-email" placeholder="Email" required>
                 <input type="password" id="login-password" placeholder="Password" required>
+                <div id="login-captcha" class="cf-turnstile" data-sitekey="0x4AAAAAAA-HUBpovgMUuiTc"></div>
                 <div id="login-error" class="error-message"></div>
                 <button type="submit">Login</button>
             </form>
@@ -101,6 +108,7 @@
             <form id="signupForm">
                 <input type="email" id="signup-email" placeholder="Email" required>
                 <input type="password" id="signup-password" placeholder="Password (6+ characters)" required>
+                <div id="signup-captcha" class="cf-turnstile" data-sitekey="0x4AAAAAAA-HUBpovgMUuiTc"></div>
                 <div id="signup-error" class="error-message"></div>
                 <button type="submit">Create Account</button>
             </form>
@@ -108,7 +116,7 @@
         </div>
     </div>
 
-    <script>
+     <script>
         // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyATODPEPLVaVg_Alrdet9flGaUpIOc8HD0",
@@ -129,12 +137,34 @@
             console.error("Firebase initialization error:", error);
         }
 
+        // CAPTCHA tokens storage
+        let loginCaptchaToken = null;
+        let signupCaptchaToken = null;
+
+        // Initialize CAPTCHAs
+        document.addEventListener('DOMContentLoaded', () => {
+            turnstile.render('#login-captcha', {
+                sitekey: '0x4AAAAAAA-HUBpovgMUuiTc',
+                callback: (token) => { loginCaptchaToken = token; }
+            });
+
+            turnstile.render('#signup-captcha', {
+                sitekey: '0x4AAAAAAA-HUBpovgMUuiTc',
+                callback: (token) => { signupCaptchaToken = token; }
+            });
+        });
+
         // Form event listeners
         document.getElementById('loginForm').addEventListener('submit', login);
         document.getElementById('signupForm').addEventListener('submit', signup);
 
         async function login(e) {
             e.preventDefault();
+            if (!loginCaptchaToken) {
+                showError('login-error', 'Please complete the CAPTCHA');
+                return;
+            }
+
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
 
@@ -143,11 +173,18 @@
                 window.location.href = 'homepage.html';
             } catch (error) {
                 showError('login-error', getErrorMessage(error));
+                turnstile.reset('#login-captcha');
+                loginCaptchaToken = null;
             }
         }
 
         async function signup(e) {
             e.preventDefault();
+            if (!signupCaptchaToken) {
+                showError('signup-error', 'Please complete the CAPTCHA');
+                return;
+            }
+
             const email = document.getElementById('signup-email').value;
             const password = document.getElementById('signup-password').value;
 
@@ -157,10 +194,12 @@
                 showLogin();
             } catch (error) {
                 showError('signup-error', getErrorMessage(error));
+                turnstile.reset('#signup-captcha');
+                signupCaptchaToken = null;
             }
         }
 
-        // Helper functions
+        // Keep existing helper functions the same
         function showError(elementId, message) {
             const errorElement = document.getElementById(elementId);
             errorElement.textContent = message;
@@ -182,12 +221,16 @@
             document.getElementById('signup-form').classList.add('hidden');
             document.getElementById('login-form').classList.remove('hidden');
             document.getElementById('loginForm').reset();
+            turnstile.reset('#login-captcha');
+            loginCaptchaToken = null;
         }
 
         function showSignup() {
             document.getElementById('login-form').classList.add('hidden');
             document.getElementById('signup-form').classList.remove('hidden');
             document.getElementById('signupForm').reset();
+            turnstile.reset('#signup-captcha');
+            signupCaptchaToken = null;
         }
     </script>
 </body>
