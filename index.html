@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login & Signup</title>
     <<!-- link href="styles/login.css" rel="stylesheet"> -->
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
         <style>
             body {
     margin: 0;
@@ -121,6 +122,7 @@
                 <input type="email" placeholder="Email" required>
                 <input type="text" placeholder="Username" required>
                 <input type="password" placeholder="Password" required>
+                <div class="cf-turnstile" data-sitekey="your-site-key"></div>
                 <button type="submit">Sign Up</button>
             </form>
             <p>Already have an account? <span class="toggle-link" onclick="showLogin()">Login here</span></p>
