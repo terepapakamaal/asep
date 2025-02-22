@@ -112,14 +112,14 @@
         <!-- Phone Login -->
         <div class="form-container hidden" id="phone-login-form">
             <h2>Login with Phone</h2>
-            <form onsubmit="event.preventDefault(); sendOTP();">
+            <form onsubmit="event.preventDefault(); sendOTPLogin();">
                 <input type="tel" id="login-phone" placeholder="Phone Number" required>
                 <div id="phone-login-error" class="error-message"></div>
                 <button type="submit">Send OTP</button>
             </form>
-            <div id="otp-section" class="hidden">
+            <div id="otp-login-section" class="hidden">
                 <input type="text" id="login-otp" placeholder="Enter OTP" required>
-                <button onclick="verifyOTP()">Verify OTP</button>
+                <button onclick="verifyOTPLogin()">Verify OTP</button>
             </div>
             <div class="toggle-link" onclick="showEmailLogin()">Use Email Instead</div>
         </div>
@@ -136,6 +136,23 @@
                 <button type="submit">Sign Up</button>
             </form>
             <p>Already have an account? <span class="toggle-link" onclick="showEmailLogin()">Login here</span></p>
+            <div class="toggle-link" onclick="showPhoneSignup()">Sign up with Phone Number Instead</div>
+        </div>
+
+        <!-- Phone Signup Form -->
+        <div class="form-container hidden" id="phone-signup-form">
+            <h2>Sign Up with Phone</h2>
+            <form onsubmit="event.preventDefault(); sendOTPSignup();">
+                <input type="tel" id="signup-phone" placeholder="Phone Number" required>
+                <div id="phone-signup-error" class="error-message"></div>
+                <button type="submit">Send OTP</button>
+            </form>
+            <div id="otp-signup-section" class="hidden">
+                <input type="text" id="signup-otp" placeholder="Enter OTP" required>
+                <button onclick="verifyOTPSignup()">Verify OTP</button>
+            </div>
+            <p>Already have an account? <span class="toggle-link" onclick="showEmailLogin()">Login here</span></p>
+            <div class="toggle-link" onclick="showSignup()">Sign up with Email Instead</div>
         </div>
     </div>
 
@@ -143,6 +160,7 @@
     // Firebase Initialization
     let auth; // Declare auth at the top level
     let firebaseInitialized = false;
+    let confirmationResult; // Declare confirmationResult for OTP verification
 
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize Firebase after DOM loads
@@ -187,7 +205,7 @@
     }
 
     // Phone Number Login
-    async function sendOTP() {
+    async function sendOTPLogin() {
         if (!firebaseInitialized) {
             alert('Authentication system is initializing...');
             return;
@@ -200,14 +218,14 @@
             });
             
             confirmationResult = await auth.signInWithPhoneNumber(phoneNumber, appVerifier);
-            document.getElementById('otp-section').classList.remove('hidden');
+            document.getElementById('otp-login-section').classList.remove('hidden');
         } catch (error) {
             document.getElementById('phone-login-error').textContent = error.message;
         }
     }
 
-    // Verify OTP
-    async function verifyOTP() {
+    // Verify OTP for Login
+    async function verifyOTPLogin() {
         try {
             await confirmationResult.confirm(document.getElementById('login-otp').value);
             window.location.href = 'homepage.html';
@@ -216,7 +234,7 @@
         }
     }
 
-    // Signup
+    // Signup with Email
     async function signup() {
         if (!firebaseInitialized) {
             alert('Authentication system is initializing...');
@@ -235,6 +253,37 @@
         }
     }
 
+    // Signup with Phone Number
+    async function sendOTPSignup() {
+        if (!firebaseInitialized) {
+            alert('Authentication system is initializing...');
+            return;
+        }
+
+        try {
+            const phoneNumber = document.getElementById('signup-phone').value;
+            const appVerifier = new firebase.auth.RecaptchaVerifier('phone-signup-form .cf-turnstile', {
+                size: 'normal'
+            });
+            
+            confirmationResult = await auth.signInWithPhoneNumber(phoneNumber, appVerifier);
+            document.getElementById('otp-signup-section').classList.remove('hidden');
+        } catch (error) {
+            document.getElementById('phone-signup-error').textContent = error.message;
+        }
+    }
+
+    // Verify OTP for Signup
+    async function verifyOTPSignup() {
+        try {
+            await confirmationResult.confirm(document.getElementById('signup-otp').value);
+            alert('Signup successful! Please login.');
+            showEmailLogin();
+        } catch (error) {
+            document.getElementById('phone-signup-error').textContent = error.message;
+        }
+    }
+
     // Form switching functions
     function showEmailLogin() {
         document.querySelectorAll('.form-container').forEach(f => f.classList.add('hidden'));
@@ -249,6 +298,11 @@
     function showSignup() {
         document.querySelectorAll('.form-container').forEach(f => f.classList.add('hidden'));
         document.getElementById('signup-form').classList.remove('hidden');
+    }
+
+    function showPhoneSignup() {
+        document.querySelectorAll('.form-container').forEach(f => f.classList.add('hidden'));
+        document.getElementById('phone-signup-form').classList.remove('hidden');
     }
 </script>
 </body>
