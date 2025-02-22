@@ -112,7 +112,7 @@
         <!-- Phone Login -->
         <div class="form-container hidden" id="phone-login-form">
             <h2>Login with Phone</h2>
-            <form onsubmit="event.preventDefault() action="homepage.html"; sendOTP();">
+            <form onsubmit="event.preventDefault(); sendOTP();">
                 <input type="tel" id="login-phone" placeholder="Phone Number" required>
                 <div id="phone-login-error" class="error-message"></div>
                 <button type="submit">Send OTP</button>
@@ -142,6 +142,7 @@
     <script>
     // Firebase Initialization
     let auth; // Declare auth at the top level
+    let firebaseInitialized = false;
 
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize Firebase after DOM loads
@@ -156,6 +157,7 @@
 
         const app = firebase.initializeApp(firebaseConfig);
         auth = firebase.auth();
+        firebaseInitialized = true;
 
         // Initialize CAPTCHA after Firebase
         turnstile.render('.cf-turnstile', {
@@ -168,7 +170,7 @@
 
     // Email/Password Login
     async function emailLogin() {
-        if (!auth) {
+        if (!firebaseInitialized) {
             alert('Authentication system is initializing...');
             return;
         }
@@ -186,7 +188,7 @@
 
     // Phone Number Login
     async function sendOTP() {
-        if (!auth) {
+        if (!firebaseInitialized) {
             alert('Authentication system is initializing...');
             return;
         }
@@ -216,7 +218,7 @@
 
     // Signup
     async function signup() {
-        if (!auth) {
+        if (!firebaseInitialized) {
             alert('Authentication system is initializing...');
             return;
         }
