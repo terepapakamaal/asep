@@ -5,12 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login & Signup</title>
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-auth.js"></script>
-  
-        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-        <style>
-body {
+    <!-- Cloudflare Turnstile CAPTCHA -->
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <style>
+        body {
             margin: 0;
             font-family: Arial, sans-serif;
             background: url('https://t3.ftcdn.net/jpg/08/04/22/42/240_F_804224219_QdNW7DlskOWvDzon8xM4LQuxX62bdvdm.jpg') no-repeat center center fixed;
@@ -34,141 +35,96 @@ body {
             width: 340px;
         }
 
-        /* Turnstile-specific fixes */
         .cf-turnstile {
             margin: 15px 0;
-            min-height: 85px; /* Increased minimum height */
+            min-height: 85px;
             display: flex !important;
             justify-content: center;
             align-items: center;
             width: 100% !important;
         }
 
-        /* Ensure iframe visibility */
         iframe[data-turnstile] {
             width: 100% !important;
             height: 85px !important;
         }
 
-.form-container h2 {
-    margin-bottom: 20px;
-    color: #2c3e50;
-}
-.form-container form {
-    display: flex;
-    flex-direction: column;
-}
-.form-container input {
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-.form-container button {
-    padding: 10px;
-    margin: 10px 0;
-    background-color: #27ae60;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-.form-container button:hover {
-    background-color: #2ecc71;
-}
-.toggle-link {
-    color: #3498db;
-    text-decoration: none;
-    cursor: pointer;
-}
-.toggle-link:hover {
-    text-decoration: underline;
-}
-.dashboard {
-    text-align: center;
-    padding: 20px;
-    background: white;
-    margin: 50px auto;
-    width: 80%;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
-.dashboard h1 {
-    color: #2c3e50;
-}
-.dashboard-content {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin-top: 20px;
-}
-.facility {
-    background-color: rgba(249, 249, 249, 0.9);
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 15px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    text-align: center;
-}
-.facility h3 {
-    margin: 10px 0;
-    color: #34495e;
-}
-.facility a {
-    text-decoration: none;
-    color: #27ae60;
-    font-weight: bold;
-}
-.facility a:hover {
-    text-decoration: underline;
-}
-        </style>
+        .form-container h2 {
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .form-container input {
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .form-container button {
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .form-container button:hover {
+            background-color: #2ecc71;
+        }
+
+        .toggle-link {
+            color: #3498db;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .toggle-link:hover {
+            text-decoration: underline;
+        }
+
+        #login-error,
+        #signup-error {
+            color: red;
+            margin: 10px 0;
+        }
+    </style>
 </head>
 
 <body>
     <div class="container" id="login-signup-container">
+        <!-- Login Form -->
         <div class="form-container" id="login-form">
             <h2>Login</h2>
-            <form action="homepage.html" method="get" target="_self">
-                <input type="text" id="username" placeholder="Username" required>
-                <input type="password" id="password" placeholder="Password" required>
-                <div class="cf-turnstile" data-sitekey="0x4AAAAAAA-HUBpovgMUuiTc"></div>
-                <button type="submit" onclick="login()">Login</button>
+            <form onsubmit="event.preventDefault(); login();">
+                <input type="email" id="login-email" placeholder="Email" required>
+                <input type="password" id="login-password" placeholder="Password" required>
+                <div id="login-error"></div>
+                <div id="login-captcha" class="cf-turnstile" data-sitekey="0x4AAAAAAA-HUBpovgMUuiTc"></div>
+                <button type="submit">Login</button>
             </form>
             <p>Don't have an account? <span class="toggle-link" onclick="showSignup()">Sign up here</span></p>
         </div>
 
+        <!-- Signup Form -->
         <div class="form-container" id="signup-form" style="display: none;">
             <h2>Signup</h2>
-            <form>
-                <input type="text" placeholder="Full Name" required>
-                <input type="email" placeholder="Email" required>
-                <input type="text" placeholder="Username" required>
-                <input type="password" placeholder="Password" required>
-                <div class="cf-turnstile" data-sitekey="0x4AAAAAAA-HUBpovgMUuiTc"></div>
-                <button type="submit" onclick="signup()">Sign Up</button>
+            <form onsubmit="event.preventDefault(); signup();">
+                <input type="text" id="full-name" placeholder="Full Name" required>
+                <input type="email" id="signup-email" placeholder="Email" required>
+                <input type="password" id="signup-password" placeholder="Password" required>
+                <div id="signup-error"></div>
+                <div id="signup-captcha" class="cf-turnstile" data-sitekey="0x4AAAAAAA-HUBpovgMUuiTc"></div>
+                <button type="submit">Sign Up</button>
             </form>
             <p>Already have an account? <span class="toggle-link" onclick="showLogin()">Login here</span></p>
         </div>
     </div>
 
-
-
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login & Signup</title>
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-    <script type="module">
-        // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
-        // TODO: Add SDKs for Firebase products that you want to use
-        // https://firebase.google.com/docs/web/setup#available-libraries
-
-        // Your web app's Firebase configuration
+    <script>
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyATODPEPLVaVg_Alrdet9flGaUpIOc8HD0",
             authDomain: "asep-bbc34.firebaseapp.com",
@@ -179,131 +135,108 @@ body {
         };
 
         // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-    </script>
-    <style>
-        /* Your existing CSS styles */
-    </style>
-</head>
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
 
-<body>
-    <div class="container" id="login-signup-container">
-        <!-- Login Form -->
-        <div class="form-container" id="login-form">
-            <h2>Login</h2>
-            <form>
-                <input type="email" id="login-email" placeholder="Email" required>
-                <input type="password" id="login-password" placeholder="Password" required>
-                <!-- CAPTCHA Container for Login -->
-                <div id="login-captcha" class="cf-turnstile" data-sitekey="0x4AAAAAAA-HUBpovgMUuiTc"></div>
-                <button type="button" onclick="login()">Login</button>
-            </form>
-            <p>Don't have an account? <span class="toggle-link" onclick="showSignup()">Sign up here</span></p>
-        </div>
-
-        <!-- Signup Form -->
-        <div class="form-container" id="signup-form" style="display: none;">
-            <h2>Signup</h2>
-            <form>
-                <input type="text" id="full-name" placeholder="Full Name" required>
-                <input type="email" id="signup-email" placeholder="Email" required>
-                <input type="password" id="signup-password" placeholder="Password" required>
-                <!-- CAPTCHA Container for Signup -->
-                <div id="signup-captcha" class="cf-turnstile" data-sitekey="0x4AAAAAAA-HUBpovgMUuiTc"></div>
-                <button type="button" onclick="signup()">Sign Up</button>
-            </form>
-            <p>Already have an account? <span class="toggle-link" onclick="showLogin()">Login here</span></p>
-        </div>
-    </div>
-
-    <script>
         // Initialize Turnstile on first load
         document.addEventListener('DOMContentLoaded', function () {
-            // Render CAPTCHA for the login form initially
             if (typeof turnstile !== 'undefined') {
                 turnstile.render('#login-captcha');
             }
         });
 
+        // Toggle between login and signup forms
         function showSignup() {
-            // Hide login form
             document.getElementById('login-form').style.display = 'none';
-
-            // Show signup form
-            const signupForm = document.getElementById('signup-form');
-            signupForm.style.display = 'block';
-
-            // Render CAPTCHA for signup form
+            document.getElementById('signup-form').style.display = 'block';
             if (typeof turnstile !== 'undefined') {
                 turnstile.render('#signup-captcha');
             }
         }
 
         function showLogin() {
-            // Hide signup form
             document.getElementById('signup-form').style.display = 'none';
-
-            // Show login form
-            const loginForm = document.getElementById('login-form');
-            loginForm.style.display = 'block';
-
-            // Render CAPTCHA for login form
+            document.getElementById('login-form').style.display = 'block';
             if (typeof turnstile !== 'undefined') {
                 turnstile.render('#login-captcha');
             }
         }
 
         // Firebase login function
-       function login() {
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
+        function login() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const errorContainer = document.getElementById('login-error');
 
-    // Firebase login logic
-    auth.signInWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-            // Login successful
-            alert('Login successful!');
-            // Redirect to another page or perform other actions
-            window.location.href = 'dashboard.html'; // Example redirect
-        })
-        .catch((error) => {
-            // Handle errors
-            let errorMessage = 'Login failed. Please try again.';
+            errorContainer.textContent = '';
 
-            switch (error.code) {
-                case 'auth/user-not-found':
-                    errorMessage = 'User not found. Please check your email or sign up.';
-                    break;
-                case 'auth/wrong-password':
-                    errorMessage = 'Incorrect password. Please try again.';
-                    break;
-                case 'auth/invalid-email':
-                    errorMessage = 'Invalid email address. Please enter a valid email.';
-                    break;
-                case 'auth/too-many-requests':
-                    errorMessage = 'Too many failed attempts. Please try again later.';
-                    break;
-                default:
-                    errorMessage = error.message; // Generic error message
+            // Verify CAPTCHA
+            const captchaResponse = document.querySelector('#login-captcha iframe').getAttribute('data-turnstile-response');
+            if (!captchaResponse) {
+                errorContainer.textContent = 'Please complete the CAPTCHA.';
+                return;
             }
 
-            // Display error message to the user
-            alert(errorMessage);
-        });
-}
+            // Firebase login
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    // Redirect on successful login
+                    window.location.href = 'homepage.html';
+                })
+                .catch((error) => {
+                    let errorMessage = 'Login failed. Please try again.';
+                    switch (error.code) {
+                        case 'auth/user-not-found':
+                            errorMessage = 'User not found. Please sign up first.';
+                            break;
+                        case 'auth/wrong-password':
+                            errorMessage = 'Incorrect password. Please try again.';
+                            break;
+                        case 'auth/too-many-requests':
+                            errorMessage = 'Too many attempts. Try again later.';
+                            break;
+                    }
+                    errorContainer.textContent = errorMessage;
+                    turnstile.reset('#login-captcha'); // Reset CAPTCHA
+                });
+        }
 
         // Firebase signup function
         function signup() {
             const email = document.getElementById('signup-email').value;
             const password = document.getElementById('signup-password').value;
+            const errorContainer = document.getElementById('signup-error');
 
-            // Add Firebase signup logic here
-            console.log('Signup with:', email, password);
+            errorContainer.textContent = '';
+
+            // Verify CAPTCHA
+            const captchaResponse = document.querySelector('#signup-captcha iframe').getAttribute('data-turnstile-response');
+            if (!captchaResponse) {
+                errorContainer.textContent = 'Please complete the CAPTCHA.';
+                return;
+            }
+
+            // Firebase signup
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    alert('Signup successful! Please login.');
+                    showLogin(); // Switch to login form
+                })
+                .catch((error) => {
+                    let errorMessage = 'Signup failed. Please try again.';
+                    switch (error.code) {
+                        case 'auth/email-already-in-use':
+                            errorMessage = 'Email already in use. Please login.';
+                            break;
+                        case 'auth/weak-password':
+                            errorMessage = 'Password is too weak. Use at least 6 characters.';
+                            break;
+                    }
+                    errorContainer.textContent = errorMessage;
+                    turnstile.reset('#signup-captcha'); // Reset CAPTCHA
+                });
         }
     </script>
-</body>
-
-</html>
 </body>
 
 </html>
