@@ -1,130 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login & Signup</title>
-    <!-- Firebase SDK (use compat versions) -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-    <style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login & Signup</title>
+  <!-- Firebase SDK (use compat versions) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <style>
     body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-        background: url('https://t3.ftcdn.net/jpg/08/04/22/42/240_F_804224219_QdNW7DlskOWvDzon8xM4LQuxX62bdvdm.jpg') no-repeat center center fixed;
-        background-size: cover;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: url('https://t3.ftcdn.net/jpg/08/04/22/42/240_F_804224219_QdNW7DlskOWvDzon8xM4LQuxX62bdvdm.jpg') no-repeat center center fixed;
+      background-size: cover;
     }
 
     .container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        backdrop-filter: blur(5px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      backdrop-filter: blur(5px);
     }
 
     .form-container {
-        background: rgba(255, 255, 255, 0.9);
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        text-align: center;
-        width: 300px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      width: 300px;
     }
-        .cf-turnstile {
-            margin: 15px 0;
-            display: flex;
-            justify-content: center;
-        }
 
     .form-container h2 {
-        margin-bottom: 20px;
-        color: #2c3e50;
+      margin-bottom: 20px;
+      color: #2c3e50;
     }
 
     .form-container input {
-        padding: 10px;
-        margin: 10px 0;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        width: 100%;
-        box-sizing: border-box;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      width: 100%;
+      box-sizing: border-box;
     }
 
     .form-container button {
-        padding: 10px;
-        margin: 10px 0;
-        background-color: #27ae60;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      background-color: #27ae60;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 100%;
     }
 
     .form-container button:hover {
-        background-color: #2ecc71;
+      background-color: #2ecc71;
     }
 
     .toggle-link {
-        color: #3498db;
-        text-decoration: none;
-        cursor: pointer;
+      color: #3498db;
+      text-decoration: none;
+      cursor: pointer;
     }
 
     .toggle-link:hover {
-        text-decoration: underline;
+      text-decoration: underline;
     }
 
     .error-message {
-        color: red;
-        margin: 10px 0;
+      color: red;
+      margin: 10px 0;
     }
 
     .hidden {
-        display: none;
+      display: none;
     }
-</style>
+  </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Login Form -->
-       <div class="form-container" id="login-form">
-  <h2>Login</h2>
-  <form id="loginForm">
-    <input type="email" id="login-email" placeholder="Email" required>
-    <input type="password" id="login-password" placeholder="Password" required>
-    <div id="login-error" class="error-message"></div>
-    <!-- Add CAPTCHA to the submit button -->
-   <button id="login-button" class="cf-turnstile-submit" 
-        data-sitekey="0x4AAAAAAA-HUBpovgMUuiTc" 
-        data-callback="onLoginCaptchaSuccess">
-  Login
-</button>
-  </form>
-  <p>Don't have an account? <span class="toggle-link" onclick="showSignup()">Sign up here</span></p>
-</div>
-
-<!-- Signup Form -->
-<div class="form-container hidden" id="signup-form">
-  <h2>Sign Up</h2>
-  <form id="signupForm">
-    <input type="email" id="signup-email" placeholder="Email" required>
-    <input type="password" id="signup-password" placeholder="Password (6+ characters)" required>
-    <div id="signup-error" class="error-message"></div>
-    <!-- Add CAPTCHA to the submit button -->
-    <button id="signup-button" class="cf-turnstile-submit" 
-        data-sitekey="0x4AAAAAAA-HUBpovgMUuiTc" 
-        data-callback="onSignupCaptchaSuccess">
-  Create Account
-</button>
-  </form>
-  <p>Already have an account? <span class="toggle-link" onclick="showLogin()">Login here</span></p>
-</div>
+  <div class="container">
+    <!-- Login Form -->
+    <div class="form-container" id="login-form">
+      <h2>Login</h2>
+      <form id="loginForm">
+        <input type="email" id="login-email" placeholder="Email" required>
+        <input type="password" id="login-password" placeholder="Password" required>
+        <div id="login-error" class="error-message"></div>
+        <button type="submit">Login</button>
+      </form>
+      <p>Don't have an account? <span class="toggle-link" onclick="showSignup()">Sign up here</span></p>
     </div>
 
-    <script>
+    <!-- Signup Form -->
+    <div class="form-container hidden" id="signup-form">
+      <h2>Sign Up</h2>
+      <form id="signupForm">
+        <input type="email" id="signup-email" placeholder="Email" required>
+        <input type="password" id="signup-password" placeholder="Password (6+ characters)" required>
+        <div id="signup-error" class="error-message"></div>
+        <button type="submit">Create Account</button>
+      </form>
+      <p>Already have an account? <span class="toggle-link" onclick="showLogin()">Login here</span></p>
+    </div>
+  </div>
+
+  <script>
     // Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyATODPEPLVaVg_Alrdet9flGaUpIOc8HD0",
@@ -145,78 +129,36 @@
       console.error("Firebase initialization error:", error);
     }
 
-    // Track form submission state
-    let isSubmitting = false;
-
     // Login Form Handler
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
-      e.preventDefault(); // Block default submission
-      if (isSubmitting) return; // Prevent duplicate clicks
+      e.preventDefault(); // Prevent default form submission
 
       const email = document.getElementById('login-email').value;
       const password = document.getElementById('login-password').value;
 
-      // Validate inputs first
-      if (!email || !password) {
-        showError('login-error', 'Please fill all fields');
-        return;
-      }
-
-      isSubmitting = true;
-      // Explicitly trigger CAPTCHA
-      turnstile.execute('#login-button');
-    });
-
-    // Signup Form Handler (similar logic)
-    document.getElementById('signupForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (isSubmitting) return;
-
-      const email = document.getElementById('signup-email').value;
-      const password = document.getElementById('signup-password').value;
-
-      if (!email || !password) {
-        showError('signup-error', 'Please fill all fields');
-        return;
-      }
-
-      isSubmitting = true;
-      turnstile.execute('#signup-button');
-    });
-
-    // Login CAPTCHA Callback
-    async function onLoginCaptchaSuccess(token) {
       try {
-        const email = document.getElementById('login-email').value;
-        const password = document.getElementById('login-password').value;
-
-        // Proceed with Firebase auth
         await auth.signInWithEmailAndPassword(email, password);
         window.location.href = 'homepage.html'; // Redirect on success
       } catch (error) {
         showError('login-error', getErrorMessage(error));
-        turnstile.reset('#login-button'); // Reset CAPTCHA
-      } finally {
-        isSubmitting = false; // Re-enable submission
       }
-    }
+    });
 
-    // Signup CAPTCHA Callback (similar logic)
-    async function onSignupCaptchaSuccess(token) {
+    // Signup Form Handler
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+      e.preventDefault(); // Prevent default form submission
+
+      const email = document.getElementById('signup-email').value;
+      const password = document.getElementById('signup-password').value;
+
       try {
-        const email = document.getElementById('signup-email').value;
-        const password = document.getElementById('signup-password').value;
-
         await auth.createUserWithEmailAndPassword(email, password);
-        alert('Account created! Please login.');
+        alert('Account created successfully! Please login.');
         showLogin(); // Switch back to login form
       } catch (error) {
         showError('signup-error', getErrorMessage(error));
-        turnstile.reset('#signup-button');
-      } finally {
-        isSubmitting = false;
       }
-    }
+    });
 
     // Helper functions
     function showError(elementId, message) {
@@ -240,14 +182,12 @@
       document.getElementById('signup-form').classList.add('hidden');
       document.getElementById('login-form').classList.remove('hidden');
       document.getElementById('loginForm').reset();
-      turnstile.reset('#login-button');
     }
 
     function showSignup() {
       document.getElementById('login-form').classList.add('hidden');
       document.getElementById('signup-form').classList.remove('hidden');
       document.getElementById('signupForm').reset();
-      turnstile.reset('#signup-button');
     }
   </script>
 </body>
