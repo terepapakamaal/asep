@@ -140,25 +140,25 @@
     </div>
 
     <script>
-    // Firebase configuration (use your actual config)
-    const firebaseConfig = {
-        apiKey: "AIzaSyATODPEPLVaVg_Alrdet9flGaUpIOc8HD0",
-        authDomain: "asep-bbc34.firebaseapp.com",
-        projectId: "asep-bbc34",
-        storageBucket: "asep-bbc34.firebasestorage.app",
-        messagingSenderId: "649819916593",
-        appId: "1:649819916593:web:7544bda86e7bae47f24810"
-    };
+    // Firebase Initialization
+    let auth; // Declare auth at the top level
 
-    // Initialize Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    let confirmationResult;
-    let captchaWidget;
-
-    // Initialize CAPTCHA
     document.addEventListener('DOMContentLoaded', function() {
-        captchaWidget = turnstile.render('.cf-turnstile', {
+        // Initialize Firebase after DOM loads
+        const firebaseConfig = {
+            apiKey: "AIzaSyATODPEPLVaVg_Alrdet9flGaUpIOc8HD0",
+            authDomain: "asep-bbc34.firebaseapp.com",
+            projectId: "asep-bbc34",
+            storageBucket: "asep-bbc34.firebasestorage.app",
+            messagingSenderId: "649819916593",
+            appId: "1:649819916593:web:7544bda86e7bae47f24810"
+        };
+
+        const app = firebase.initializeApp(firebaseConfig);
+        auth = firebase.auth();
+
+        // Initialize CAPTCHA after Firebase
+        turnstile.render('.cf-turnstile', {
             sitekey: '0x4AAAAAAA-HUBpovgMUuiTc',
             callback: function(token) {
                 console.log('CAPTCHA verified:', token);
@@ -168,85 +168,85 @@
 
     // Email/Password Login
     async function emailLogin() {
-        const email = document.getElementById('login-email').value;
-        const password = document.getElementById('login-password').value;
-        const errorContainer = document.getElementById('login-error');
-        errorContainer.textContent = '';
+        if (!auth) {
+            alert('Authentication system is initializing...');
+            return;
+        }
 
         try {
-            const userCredential = await auth.signInWithEmailAndPassword(email, password);
-            window.location.href = 'homepage.html'; // Redirect on success
+            const user = await auth.signInWithEmailAndPassword(
+                document.getElementById('login-email').value,
+                document.getElementById('login-password').value
+            );
+            window.location.href = 'homepage.html';
         } catch (error) {
-            errorContainer.textContent = `Error: ${error.message}`;
+            document.getElementById('login-error').textContent = error.message;
         }
     }
 
-    // Phone Number Login: Send OTP
+    // Phone Number Login
     async function sendOTP() {
-        const phoneNumber = document.getElementById('login-phone').value;
-        const errorContainer = document.getElementById('phone-login-error');
-        errorContainer.textContent = '';
+        if (!auth) {
+            alert('Authentication system is initializing...');
+            return;
+        }
 
         try {
+            const phoneNumber = document.getElementById('login-phone').value;
             const appVerifier = new firebase.auth.RecaptchaVerifier('phone-login-form .cf-turnstile', {
-                size: 'normal',
+                size: 'normal'
             });
             
             confirmationResult = await auth.signInWithPhoneNumber(phoneNumber, appVerifier);
             document.getElementById('otp-section').classList.remove('hidden');
         } catch (error) {
-            errorContainer.textContent = `Error: ${error.message}`;
-            console.error(error);
+            document.getElementById('phone-login-error').textContent = error.message;
         }
     }
 
     // Verify OTP
     async function verifyOTP() {
-        const otp = document.getElementById('login-otp').value;
-        const errorContainer = document.getElementById('phone-login-error');
-        errorContainer.textContent = '';
-
         try {
-            await confirmationResult.confirm(otp);
-            window.location.href = 'homepage.html'; // Redirect on success
+            await confirmationResult.confirm(document.getElementById('login-otp').value);
+            window.location.href = 'homepage.html';
         } catch (error) {
-            errorContainer.textContent = `Error: ${error.message}`;
+            document.getElementById('phone-login-error').textContent = error.message;
         }
     }
 
     // Signup
     async function signup() {
-        const email = document.getElementById('signup-email').value;
-        const password = document.getElementById('signup-password').value;
-        const errorContainer = document.getElementById('signup-error');
-        errorContainer.textContent = '';
+        if (!auth) {
+            alert('Authentication system is initializing...');
+            return;
+        }
 
         try {
-            await auth.createUserWithEmailAndPassword(email, password);
+            await auth.createUserWithEmailAndPassword(
+                document.getElementById('signup-email').value,
+                document.getElementById('signup-password').value
+            );
             alert('Signup successful! Please login.');
             showEmailLogin();
         } catch (error) {
-            errorContainer.textContent = `Error: ${error.message}`;
+            document.getElementById('signup-error').textContent = error.message;
         }
     }
 
-    // Toggle forms
+    // Form switching functions
     function showEmailLogin() {
         document.querySelectorAll('.form-container').forEach(f => f.classList.add('hidden'));
         document.getElementById('email-login-form').classList.remove('hidden');
-        turnstile.reset(captchaWidget);
     }
 
     function showPhoneLogin() {
         document.querySelectorAll('.form-container').forEach(f => f.classList.add('hidden'));
         document.getElementById('phone-login-form').classList.remove('hidden');
-        turnstile.reset(captchaWidget);
     }
 
     function showSignup() {
         document.querySelectorAll('.form-container').forEach(f => f.classList.add('hidden'));
         document.getElementById('signup-form').classList.remove('hidden');
-        turnstile.reset(captchaWidget);
     }
 </script>
 </body>
