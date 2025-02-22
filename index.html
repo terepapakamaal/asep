@@ -3,82 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Email/Password Authentication</title>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.1.0/firebase-auth.js"></script>
+    <title>Login & Signup</title>
+    <!-- Firebase SDK (use compat versions) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: url('https://t3.ftcdn.net/jpg/08/04/22/42/240_F_804224219_QdNW7DlskOWvDzon8xM4LQuxX62bdvdm.jpg') no-repeat center center fixed;
-            background-size: cover;
-        }
+    <style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: url('https://t3.ftcdn.net/jpg/08/04/22/42/240_F_804224219_QdNW7DlskOWvDzon8xM4LQuxX62bdvdm.jpg') no-repeat center center fixed;
+        background-size: cover;
+    }
 
-        .container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            backdrop-filter: blur(5px);
-        }
+    .container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        backdrop-filter: blur(5px);
+    }
 
-        .form-container {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            text-align: center;
-            width: 300px;
-        }
+    .form-container {
+        background: rgba(255, 255, 255, 0.9);
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        text-align: center;
+        width: 300px;
+    }
 
-        .form-container h2 {
-            margin-bottom: 20px;
-            color: #2c3e50;
-        }
+    .form-container h2 {
+        margin-bottom: 20px;
+        color: #2c3e50;
+    }
 
-        .form-container input {
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            width: 100%;
-            box-sizing: border-box;
-        }
+    .form-container input {
+        padding: 10px;
+        margin: 10px 0;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        width: 100%;
+        box-sizing: border-box;
+    }
 
-        .form-container button {
-            padding: 10px;
-            margin: 10px 0;
-            background-color: #27ae60;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            width: 100%;
-        }
+    .form-container button {
+        padding: 10px;
+        margin: 10px 0;
+        background-color: #27ae60;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        width: 100%;
+    }
 
-        .form-container button:hover {
-            background-color: #2ecc71;
-        }
+    .form-container button:hover {
+        background-color: #2ecc71;
+    }
 
-        .toggle-link {
-            color: #3498db;
-            text-decoration: none;
-            cursor: pointer;
-        }
+    .toggle-link {
+        color: #3498db;
+        text-decoration: none;
+        cursor: pointer;
+    }
 
-        .toggle-link:hover {
-            text-decoration: underline;
-        }
+    .toggle-link:hover {
+        text-decoration: underline;
+    }
 
-        .error-message {
-            color: red;
-            margin: 10px 0;
-        }
+    .error-message {
+        color: red;
+        margin: 10px 0;
+    }
 
-        .hidden {
-            display: none;
-        }
+    .hidden {
+        display: none;
+    }
+</style>
     </style>
 </head>
 <body>
@@ -86,7 +88,7 @@
         <!-- Login Form -->
         <div class="form-container" id="login-form">
             <h2>Login</h2>
-            <form onsubmit="event.preventDefault(); login();">
+            <form id="loginForm">
                 <input type="email" id="login-email" placeholder="Email" required>
                 <input type="password" id="login-password" placeholder="Password" required>
                 <div id="login-error" class="error-message"></div>
@@ -98,7 +100,7 @@
         <!-- Signup Form -->
         <div class="form-container hidden" id="signup-form">
             <h2>Sign Up</h2>
-            <form onsubmit="event.preventDefault(); signup();">
+            <form id="signupForm">
                 <input type="email" id="signup-email" placeholder="Email" required>
                 <input type="password" id="signup-password" placeholder="Password (6+ characters)" required>
                 <div id="signup-error" class="error-message"></div>
@@ -109,7 +111,7 @@
     </div>
 
     <script>
-        // Firebase configuration (REPLACE WITH YOUR CONFIG)
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyATODPEPLVaVg_Alrdet9flGaUpIOc8HD0",
             authDomain: "asep-bbc34.firebaseapp.com",
@@ -119,26 +121,22 @@
             appId: "1:649819916593:web:7544bda86e7bae47f24810"
         };
 
-        // Firebase initialization
+        // Initialize Firebase
         let auth;
-        
-        document.addEventListener('DOMContentLoaded', () => {
-            try {
-                const app = firebase.initializeApp(firebaseConfig);
-                auth = firebase.auth();
-                console.log("Firebase initialized successfully");
-            } catch (error) {
-                console.error("Firebase initialization error:", error);
-            }
-        });
+        try {
+            firebase.initializeApp(firebaseConfig);
+            auth = firebase.auth();
+            console.log("Firebase initialized successfully");
+        } catch (error) {
+            console.error("Firebase initialization error:", error);
+        }
 
-        // Authentication functions
-        async function login() {
-            if (!auth) {
-                showError('login-error', 'Authentication system is initializing...');
-                return;
-            }
+        // Form event listeners
+        document.getElementById('loginForm').addEventListener('submit', login);
+        document.getElementById('signupForm').addEventListener('submit', signup);
 
+        async function login(e) {
+            e.preventDefault();
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
 
@@ -150,12 +148,8 @@
             }
         }
 
-        async function signup() {
-            if (!auth) {
-                showError('signup-error', 'Authentication system is initializing...');
-                return;
-            }
-
+        async function signup(e) {
+            e.preventDefault();
             const email = document.getElementById('signup-email').value;
             const password = document.getElementById('signup-password').value;
 
@@ -177,38 +171,25 @@
 
         function getErrorMessage(error) {
             switch (error.code) {
-                case 'auth/email-already-in-use':
-                    return 'Email already registered';
-                case 'auth/invalid-email':
-                    return 'Invalid email address';
-                case 'auth/weak-password':
-                    return 'Password must be at least 6 characters';
-                case 'auth/user-not-found':
-                    return 'Account not found';
-                case 'auth/wrong-password':
-                    return 'Incorrect password';
-                default:
-                    return 'Authentication failed. Please try again.';
+                case 'auth/email-already-in-use': return 'Email already registered';
+                case 'auth/invalid-email': return 'Invalid email address';
+                case 'auth/weak-password': return 'Password must be at least 6 characters';
+                case 'auth/user-not-found': return 'Account not found';
+                case 'auth/wrong-password': return 'Incorrect password';
+                default: return 'Authentication failed. Please try again.';
             }
         }
 
-        // Form visibility control
         function showLogin() {
             document.getElementById('signup-form').classList.add('hidden');
             document.getElementById('login-form').classList.remove('hidden');
-            clearForm('signup-form');
+            document.getElementById('loginForm').reset();
         }
 
         function showSignup() {
             document.getElementById('login-form').classList.add('hidden');
             document.getElementById('signup-form').classList.remove('hidden');
-            clearForm('login-form');
-        }
-
-        function clearForm(formId) {
-            const form = document.getElementById(formId);
-            form.reset();
-            form.querySelector('.error-message').textContent = '';
+            document.getElementById('signupForm').reset();
         }
     </script>
 </body>
