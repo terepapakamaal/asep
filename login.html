@@ -198,6 +198,8 @@
     let auth, db;
     let confirmationResult = null;
     let verifiedPhone = null;
+    let recaptchaVerifier = null;
+    let recaptchaWidgetId = null;
 
     // Initialize Firebase
     try {
@@ -208,7 +210,7 @@
       console.error("Firebase initialization failed", error);
     }
 
-    // Login Handler
+    // Login Handler (unchanged)
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('login-email').value;
@@ -217,7 +219,6 @@
       try {
         const userCredential = await auth.signInWithEmailAndPassword(email, password);
         
-        // Check if email is verified
         if (!userCredential.user.emailVerified) {
           await auth.signOut();
           showError('login-error', 'Please verify your email first');
@@ -230,7 +231,7 @@
       }
     });
 
-    // Signup OTP Handler
+    // Signup OTP Handler (modified)
     document.getElementById('send-otp-btn').addEventListener('click', async () => {
       const phone = document.getElementById('signup-phone').value;
       if (!phone.match(/^\+\d{10,15}$/)) {
@@ -239,19 +240,33 @@
       }
 
       try {
-        const appVerifier = new firebase.auth.RecaptchaVerifier('send-otp-btn', {
-          size: 'invisible'
+        // Clear existing reCAPTCHA if any
+        if (recaptchaVerifier) {
+          recaptchaVerifier.clear();
+          grecaptcha.reset(recaptchaWidgetId);
+        }
+
+        // Create new reCAPTCHA instance
+        recaptchaVerifier = new firebase.auth.RecaptchaVerifier('send-otp-btn', {
+          size: 'invisible',
+          callback: (response) => {
+            console.log('reCAPTCHA solved:', response);
+          }
         });
 
-        confirmationResult = await auth.signInWithPhoneNumber(phone, appVerifier);
+        // Store widget ID
+        recaptchaWidgetId = await recaptchaVerifier.render();
+
+        confirmationResult = await auth.signInWithPhoneNumber(phone, recaptchaVerifier);
         document.getElementById('otp-group').classList.remove('hidden');
         showError('signup-error', 'OTP sent successfully!');
       } catch (error) {
         showError('signup-error', getErrorMessage(error));
+        if (recaptchaVerifier) recaptchaVerifier.clear();
       }
     });
 
-    // Complete Registration
+    // Complete Registration (unchanged except error handling)
     document.getElementById('signupForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const otp = document.getElementById('signup-otp').value;
@@ -264,16 +279,13 @@
       showProgress(true);
 
       try {
-        // Verify OTP
         await confirmationResult.confirm(otp);
         verifiedPhone = document.getElementById('signup-phone').value;
 
-        // Create email/password account
         const email = document.getElementById('signup-email').value;
         const password = document.getElementById('signup-password').value;
         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
 
-        // Store additional data
         await db.collection('farmers').doc(userCredential.user.uid).set({
           name: document.getElementById('signup-name').value,
           email,
@@ -287,9 +299,7 @@
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        // Send email verification
         await userCredential.user.sendEmailVerification();
-        
         alert('Registration complete! Verify your email to login.');
         showLogin();
       } catch (error) {
@@ -297,41 +307,40 @@
         if (auth.currentUser) await auth.currentUser.delete();
       } finally {
         showProgress(false);
+        if (recaptchaVerifier) {
+          recaptchaVerifier.clear();
+          grecaptcha.reset(recaptchaWidgetId);
+        }
       }
     });
 
-    // UI Functions
-    function showProgress(show) {
-      document.getElementById('signup-progress').style.display = show ? 'block' : 'none';
-    }
-
-    function showLogin() {
-      document.getElementById('signup-form').classList.add('hidden');
-      document.getElementById('login-form').classList.remove('hidden');
-      resetSignupForm();
-    }
-
-    function showSignup() {
-      document.getElementById('login-form').classList.add('hidden');
-      document.getElementById('signup-form').classList.remove('hidden');
-      resetSignupForm();
-    }
-
+    // Modified reset function
     function resetSignupForm() {
       document.getElementById('signupForm').reset();
       document.getElementById('otp-group').classList.add('hidden');
       confirmationResult = null;
       verifiedPhone = null;
+      
+      if (recaptchaVerifier) {
+        recaptchaVerifier.clear();
+        grecaptcha.reset(recaptchaWidgetId);
+        recaptchaVerifier = null;
+        recaptchaWidgetId = null;
+      }
     }
 
-    function showError(elementId, message) {
-      const el = document.getElementById(elementId);
+    // Other functions remain unchanged
+    function showProgress(show) { document.getElementById('signup-progress').style.display = show ? 'block' : 'none'; }
+    function showLogin() {  document.getElementById('signup-form').classList.add('hidden');
+      document.getElementById('login-form').classList.remove('hidden');
+      resetSignupForm(); }
+    function showSignup() {  document.getElementById('login-form').classList.add('hidden');
+      document.getElementById('signup-form').classList.remove('hidden');
+      resetSignupForm(); }
+    function showError(elementId, message) { const el = document.getElementById(elementId);
       el.textContent = message;
-      setTimeout(() => el.textContent = '', 5000);
-    }
-
-    function getErrorMessage(error) {
-      const errorMap = {
+      setTimeout(() => el.textContent = '', 5000); }
+    function getErrorMessage(error) { const errorMap = {
         'auth/invalid-email': 'Invalid email address',
         'auth/user-disabled': 'Account disabled',
         'auth/user-not-found': 'Account not found',
@@ -342,8 +351,7 @@
         'auth/invalid-verification-code': 'Invalid OTP code',
         'auth/code-expired': 'OTP expired. Resend code'
       };
-      return errorMap[error.code] || error.message;
-    }
-  </script>
+      return errorMap[error.code] || error.message; }
+</script>
 </body>
 </html>
