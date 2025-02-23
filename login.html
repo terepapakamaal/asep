@@ -9,7 +9,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <!-- reCAPTCHA -->
-  <script src="https://www.google.com/recaptcha/api.js"></script>
+ 
   <style>
     body {
       margin: 0;
@@ -210,36 +210,43 @@
 
     // Signup Handler
     document.getElementById('signupForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const email = document.getElementById('signup-email').value;
-      const password = document.getElementById('signup-password').value;
-      const name = document.getElementById('signup-name').value;
-      const phone = document.getElementById('signup-phone').value;
-      const address = document.getElementById('signup-address').value;
-      const farmerType = document.getElementById('signup-farmer-type').value;
+  e.preventDefault();
+  
+  const email = document.getElementById('signup-email').value;
+  const password = document.getElementById('signup-password').value;
+  const name = document.getElementById('signup-name').value;
+  const phone = document.getElementById('signup-phone').value;
+  const address = document.getElementById('signup-address').value;
+  const farmerType = document.getElementById('signup-farmer-type').value;
 
-      try {
-        // Create user account
-        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-        
-        // Store additional data in Firestore
-        await db.collection('farmers').doc(userCredential.user.uid).set({
-          name,
-          email,
-          phone,
-          address,
-          farmerType,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        alert('Registration successful!');
-        showLogin();
-      } catch (error) {
-        showError('signup-error', getErrorMessage(error));
-        if (auth.currentUser) await auth.currentUser.delete();
-      }
+  try {
+    // Create user account
+    const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+    
+    // Store additional data in Firestore
+    await db.collection('farmers').doc(userCredential.user.uid).set({
+      name,
+      email,
+      phone,
+      address,
+      farmerType,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
+
+    // Show success message
+    alert('Registration successful!');
+
+    // Send email verification AFTER the alert
+    await userCredential.user.sendEmailVerification();
+    alert('A verification email has been sent to your email address. Please verify your email to complete registration.');
+
+    // Redirect or show login form
+    showLogin();
+  } catch (error) {
+    showError('signup-error', getErrorMessage(error));
+    if (auth.currentUser) await auth.currentUser.delete();
+  }
+});
 
     // UI Functions
     function showLogin() {
