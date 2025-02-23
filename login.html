@@ -4,13 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login & Signup</title>
-  <!-- Firebase SDK (use compat versions) -->
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <style>
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
+      font-family: 'Arial', sans-serif;
       background: url('https://t3.ftcdn.net/jpg/08/04/22/42/240_F_804224219_QdNW7DlskOWvDzon8xM4LQuxX62bdvdm.jpg') no-repeat center center fixed;
       background-size: cover;
     }
@@ -19,52 +20,79 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
       backdrop-filter: blur(5px);
+      padding: 20px;
     }
 
     .form-container {
-      background: rgba(255, 255, 255, 0.9);
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-      text-align: center;
-      width: 300px;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      width: 100%;
+      max-width: 400px;
     }
 
     .form-container h2 {
-      margin-bottom: 20px;
       color: #2c3e50;
+      margin-bottom: 25px;
+      font-size: 1.8rem;
     }
 
-    .form-container input {
-      padding: 10px;
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 5px;
+    .input-group {
+      margin-bottom: 15px;
+      text-align: left;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 5px;
+      color: #34495e;
+      font-size: 0.9rem;
+    }
+
+    .input-group input,
+    .input-group select {
       width: 100%;
-      box-sizing: border-box;
+      padding: 12px;
+      border: 2px solid #ecf0f1;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
     }
 
-    .form-container button {
-      padding: 10px;
-      margin: 10px 0;
-      background-color: #27ae60;
+    .input-group input:focus,
+    .input-group select:focus {
+      outline: none;
+      border-color: #27ae60;
+    }
+
+    button[type="submit"] {
+      width: 100%;
+      padding: 14px;
+      background: #27ae60;
       color: white;
       border: none;
-      border-radius: 5px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
       cursor: pointer;
-      width: 100%;
+      transition: background 0.3s ease;
+      margin-top: 15px;
     }
 
-    .form-container button:hover {
-      background-color: #2ecc71;
+    button[type="submit"]:hover {
+      background: #219a52;
     }
 
     .toggle-link {
       color: #3498db;
-      text-decoration: none;
       cursor: pointer;
+      font-weight: 500;
+      margin-top: 20px;
+      display: block;
+      text-align: center;
     }
 
     .toggle-link:hover {
@@ -72,8 +100,10 @@
     }
 
     .error-message {
-      color: red;
-      margin: 10px 0;
+      color: #e74c3c;
+      font-size: 0.9rem;
+      margin-top: 5px;
+      min-height: 20px;
     }
 
     .hidden {
@@ -85,82 +115,125 @@
   <div class="container">
     <!-- Login Form -->
     <div class="form-container" id="login-form">
-      <h2>Login</h2>
+      <h2>Welcome Back</h2>
       <form id="loginForm">
-        <input type="email" id="login-email" placeholder="Email" required>
-        <input type="password" id="login-password" placeholder="Password" required>
+        <div class="input-group">
+          <input type="email" id="login-email" placeholder="Email" required>
+        </div>
+        <div class="input-group">
+          <input type="password" id="login-password" placeholder="Password" required>
+        </div>
         <div id="login-error" class="error-message"></div>
         <button type="submit">Login</button>
       </form>
-      <p>Don't have an account? <span class="toggle-link" onclick="showSignup()">Sign up here</span></p>
+      <p class="toggle-link" onclick="showSignup()">New user? Create an account</p>
     </div>
 
     <!-- Signup Form -->
     <div class="form-container hidden" id="signup-form">
-      <h2>Sign Up</h2>
+      <h2>Create Account</h2>
       <form id="signupForm">
-        <input type="email" id="signup-email" placeholder="Email" required>
-        <input type="password" id="signup-password" placeholder="Password (6+ characters)" required>
+        <div class="input-group">
+          <input type="text" id="signup-name" placeholder="Full Name" required>
+        </div>
+        <div class="input-group">
+          <input type="email" id="signup-email" placeholder="Email Address" required>
+        </div>
+        <div class="input-group">
+          <input type="tel" id="signup-phone" placeholder="Phone Number" required>
+        </div>
+        <div class="input-group">
+          <input type="text" id="signup-address" placeholder="Farm Address" required>
+        </div>
+        <div class="input-group">
+          <select id="signup-farmer-type" required>
+            <option value="">Select Farmer Type</option>
+            <option value="smallholder">Smallholder Farmer</option>
+            <option value="commercial">Commercial Farmer</option>
+            <option value="cooperative">Agricultural Cooperative</option>
+            <option value="organic">Organic Farmer</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <input type="password" id="signup-password" placeholder="Create Password (6+ characters)" required>
+        </div>
         <div id="signup-error" class="error-message"></div>
-        <button type="submit">Create Account</button>
+        <button type="submit">Register Now</button>
       </form>
-      <p>Already have an account? <span class="toggle-link" onclick="showLogin()">Login here</span></p>
+      <p class="toggle-link" onclick="showLogin()">Already have an account? Sign in</p>
     </div>
   </div>
 
   <script>
-    // Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyATODPEPLVaVg_Alrdet9flGaUpIOc8HD0",
       authDomain: "asep-bbc34.firebaseapp.com",
       projectId: "asep-bbc34",
-      storageBucket: "asep-bbc34.firebasestorage.app",
+      storageBucket: "asep-bbc34.appspot.com",
       messagingSenderId: "649819916593",
       appId: "1:649819916593:web:7544bda86e7bae47f24810"
     };
 
     // Initialize Firebase
-    let auth;
+    let auth, db;
     try {
       firebase.initializeApp(firebaseConfig);
       auth = firebase.auth();
+      db = firebase.firestore();
       console.log("Firebase initialized successfully");
     } catch (error) {
       console.error("Firebase initialization error:", error);
     }
 
-    // Login Form Handler
+    // Login Handler
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
-      e.preventDefault(); // Prevent default form submission
-
+      e.preventDefault();
       const email = document.getElementById('login-email').value;
       const password = document.getElementById('login-password').value;
 
       try {
         await auth.signInWithEmailAndPassword(email, password);
-        window.location.href = 'homepage.html'; // Redirect on success
+        window.location.href = 'homepage.html';
       } catch (error) {
         showError('login-error', getErrorMessage(error));
       }
     });
 
-    // Signup Form Handler
+    // Enhanced Signup Handler
     document.getElementById('signupForm').addEventListener('submit', async (e) => {
-      e.preventDefault(); // Prevent default form submission
-
+      e.preventDefault();
+      
       const email = document.getElementById('signup-email').value;
       const password = document.getElementById('signup-password').value;
+      const name = document.getElementById('signup-name').value;
+      const phone = document.getElementById('signup-phone').value;
+      const address = document.getElementById('signup-address').value;
+      const farmerType = document.getElementById('signup-farmer-type').value;
 
       try {
-        await auth.createUserWithEmailAndPassword(email, password);
-        alert('Account created successfully! Please login.');
-        showLogin(); // Switch back to login form
+        // Create user account
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        
+        // Save additional user data to Firestore
+        await db.collection('users').doc(userCredential.user.uid).set({
+          name,
+          email,
+          phone,
+          address,
+          farmerType,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        alert('Registration successful! Please login.');
+        showLogin();
       } catch (error) {
         showError('signup-error', getErrorMessage(error));
+        // Optional: Delete user if Firestore save fails
+        if (auth.currentUser) await auth.currentUser.delete();
       }
     });
 
-    // Helper functions
+    // Helper Functions
     function showError(elementId, message) {
       const errorElement = document.getElementById(elementId);
       errorElement.textContent = message;
@@ -174,20 +247,18 @@
         case 'auth/weak-password': return 'Password must be at least 6 characters';
         case 'auth/user-not-found': return 'Account not found';
         case 'auth/wrong-password': return 'Incorrect password';
-        default: return 'Authentication failed. Please try again.';
+        default: return error.message || 'Operation failed. Please try again.';
       }
     }
 
     function showLogin() {
       document.getElementById('signup-form').classList.add('hidden');
       document.getElementById('login-form').classList.remove('hidden');
-      document.getElementById('loginForm').reset();
     }
 
     function showSignup() {
       document.getElementById('login-form').classList.add('hidden');
       document.getElementById('signup-form').classList.remove('hidden');
-      document.getElementById('signupForm').reset();
     }
   </script>
 </body>
