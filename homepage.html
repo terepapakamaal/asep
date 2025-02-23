@@ -155,6 +155,41 @@
         .news-content {
             padding: 1.2rem;
         }
+        .menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close-btn {
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #666;
+            padding: 5px;
+        }
+
+        .close-btn:hover {
+            color: var(--primary-green);
+        }
+
+        .user-details {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+
+        .user-detail-item {
+            margin: 10px 0;
+            font-size: 0.9rem;
+        }
+
+        .user-detail-item strong {
+            color: var(--primary-green);
+            display: block;
+            margin-bottom: 5px;
+        }
     </style>
 </head>
 <body>
@@ -171,28 +206,35 @@
 
     <!-- Side Menu -->
     <div class="side-menu" id="sideMenu">
+        <div class="menu-header">
+            <h3>User Profile</h3>
+            <i class="fas fa-times close-btn" onclick="toggleMenu()"></i>
+        </div>
+
         <div class="user-info">
             <i class="fas fa-user-circle fa-3x"></i>
-            <h3 id="userName">अशोक कुमार</h3>
-            <p id="userEmail">kisan@example.com</p>
+            <h3 id="userName">Loading...</h3>
+            <p id="userEmail">Loading...</p>
         </div>
 
-        <div class="menu-items">
-            <div class="menu-item" onclick="showDashboard()">
-                <i class="fas fa-home"></i> डैशबोर्ड
+        <div class="user-details">
+            <div class="user-detail-item">
+                <strong>Address:</strong>
+                <span id="userAddress">-</span>
             </div>
-            <div class="menu-item" onclick="showProfile()">
-                <i class="fas fa-user"></i> प्रोफ़ाइल
+            <div class="user-detail-item">
+                <strong>Phone:</strong>
+                <span id="userPhone">-</span>
             </div>
-            <div class="menu-item" onclick="showSchemes()">
-                <i class="fas fa-rupee-sign"></i> योजनाएँ
+            <div class="user-detail-item">
+                <strong>Farmer Type:</strong>
+                <span id="userType">-</span>
             </div>
-            <div class="menu-item" onclick="logout()">
-                <i class="fas fa-sign-out-alt"></i> लॉग आउट
+            <div class="user-detail-item">
+                <strong>Member Since:</strong>
+                <span id="joinDate">-</span>
             </div>
         </div>
-    </div>
-
     <!-- Main Content -->
     <div class="main-content">
         <!-- Services Section -->
@@ -312,6 +354,51 @@
                 });
             }
         }
+        function loadUserData(user) {
+            if (user) {
+                db.collection('farmers').doc(user.uid).get().then(doc => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        document.getElementById('userName').textContent = data.name || 'Not provided';
+                        document.getElementById('userEmail').textContent = data.email;
+                        document.getElementById('userAddress').textContent = data.address || 'Not provided';
+                        document.getElementById('userPhone').textContent = data.phone || 'Not provided';
+                        document.getElementById('userType').textContent = data.farmerType || 'Not specified';
+                        
+                        // Format timestamp
+                        if (data.createdAt) {
+                            const date = data.createdAt.toDate();
+                            document.getElementById('joinDate').textContent = 
+                                date.toLocaleDateString('en-IN', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                });
+                        }
+                    }
+                }).catch(error => {
+                    console.error('Error fetching user data:', error);
+                    showError('menuError', 'Failed to load profile data');
+                });
+            }
+        }
+
+        // Toggle menu function
+        function toggleMenu() {
+            const menu = document.getElementById('sideMenu');
+            menu.classList.toggle('open');
+        }
+
+        // Initialize auth listener
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                loadUserData(user);
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
 
         function logout() {
             auth.signOut().then(() => {
