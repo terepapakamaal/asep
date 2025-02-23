@@ -3,147 +3,237 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Farmer Website</title>
+    <title>Farmer Portal</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-/* General Reset */
-body, h1, h2, p, ul, li {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+        /* Modern Style Update */
+        :root {
+            --primary-green: #2E7D32;
+            --secondary-green: #81C784;
+            --accent-orange: #FFA726;
+            --background: #F5F5F5;
+        }
 
-body {
-    font-family: Arial, sans-serif;
-    background-image: url('farming-background.jpg'); /* Add your farming-related background image here */
-    background-size: cover;
-    background-position: center;
-    color: #333;
-    line-height: 1.6;
-}
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--background);
+            color: #333;
+        }
 
-/* Notification Bar */
-.notification-bar {
-    background-color: #ff9800;
-    color: white;
-    padding: 10px;
-    text-align: center;
-    font-size: 1rem;
-    font-weight: bold;
-}
+        /* Notification Ticker */
+        .news-ticker {
+            background: var(--primary-green);
+            color: white;
+            padding: 10px 0;
+            overflow: hidden;
+            position: relative;
+        }
 
-/* Header */
-header {
-    text-align: center;
-    background: rgba(0, 128, 0, 0.7);
-    color: white;
-    padding: 20px;
-}
+        .ticker-content {
+            display: inline-block;
+            white-space: nowrap;
+            animation: ticker 20s linear infinite;
+        }
 
-header h1 {
-    font-size: 2.5rem;
-}
+        @keyframes ticker {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
 
-/* Navigation Bar */
-nav {
-    background: rgba(0, 128, 0, 0.9);
-    padding: 10px 0;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
+        /* Modern Header */
+        header {
+            background: linear-gradient(135deg, var(--primary-green), #1B5E20);
+            color: white;
+            padding: 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+        }
 
-nav ul {
-    list-style: none;
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-}
+        .menu-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 1.5rem;
+        }
 
-nav ul li {
-    display: inline;
-}
+        /* Hamburger Menu */
+        .side-menu {
+            position: fixed;
+            left: -300px;
+            top: 0;
+            width: 280px;
+            height: 100%;
+            background: white;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+            transition: 0.3s;
+            z-index: 1000;
+            padding: 20px;
+        }
 
-nav ul li a {
-    text-decoration: none;
-    color: white;
-    font-size: 1.2rem;
-    font-weight: bold;
-    padding: 5px 15px;
-    transition: background 0.3s ease-in-out;
-}
+        .side-menu.open {
+            left: 0;
+        }
 
-nav ul li a:hover {
-    background: #ffa726;
-    border-radius: 5px;
-}
+        .user-info {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #eee;
+        }
 
-/* Main Content */
-main {
-    padding: 20px;
-    text-align: center;
-    background: rgba(255, 255, 255, 0.8);
-    margin: 20px auto;
-    max-width: 800px;
-    border-radius: 10px;
-}
+        .user-info h3 {
+            color: var(--primary-green);
+            margin: 10px 0;
+        }
 
-main section {
-    margin: 20px 0;
-}
+        .menu-item {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            transition: 0.3s;
+            cursor: pointer;
+        }
 
-main section h2 {
-    font-size: 2rem;
-    color: #4caf50;
-    margin-bottom: 10px;
-}
+        .menu-item:hover {
+            background: var(--secondary-green);
+            color: white;
+        }
 
-/* Footer */
-footer {
-    text-align: center;
-    background: rgba(0, 128, 0, 0.7);
-    color: white;
-    padding: 10px;
-    margin-top: 20px;
-}
-</style>
+        /* Modern Card Layout */
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            color: var(--primary-green);
+            margin-bottom: 15px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            nav ul {
+                display: none;
+            }
+            
+            .menu-icon {
+                display: block;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="notification-bar">
-        <p>Welcome to the Farmer Portal! Stay updated with the latest weather reports and farming tips.</p>
+    <div class="news-ticker">
+        <div class="ticker-content">
+            🚜 Important Update: New Farming Subsidy Scheme Announced! | 🌧️ Weather Alert: Heavy Rains Expected Next Week | 📅 Mandatory Soil Testing Camp on 25th August
+        </div>
     </div>
 
     <header>
+        <i class="fas fa-bars menu-icon" onclick="toggleMenu()"></i>
         <h1>Farmer's Portal</h1>
     </header>
 
-    <nav>
-        <ul>
-            <li><a href="soiltesting.html">Soil Testing</a></li>
-            <li><a href="land.html">Land Transformation</a></li>
-            <li><a href="weatherreport.html">Weather</a></li>
-            <li><a href="about.html">about</a></li>
-            
-        </ul>
-    </nav>
+    <div class="side-menu" id="sideMenu">
+        <div class="user-info">
+            <i class="fas fa-user-circle fa-3x"></i>
+            <h3 id="userName">Asep</h3>
+            <p id="userEmail">terepapakamaal@proton.me</p>
+        </div>
 
-    <main>
-        <section id="soil-testing">
-            <h2>Soil Testing</h2>
-            <p>Analyze your soil for better crop production and yeild.</p>
-        </section>
+        <div class="menu-item" onclick="showProfile()">
+            <i class="fas fa-user"></i> Profile
+        </div>
+        <div class="menu-item" onclick="showSettings()">
+            <i class="fas fa-cog"></i> Account Settings
+        </div>
+        <div class="menu-item" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </div>
 
-        <section id="land-transformation">
-            <h2>Land Transformation</h2>
-            <p>Get expert advice on land preparation for farming.</p>
-        </section>
+        <div class="user-details">
+            <h4>Farmer Details</h4>
+            <p><strong>Address:</strong> <span id="userAddress">a</span></p>
+            <p><strong>Phone:</strong> <span id="userPhone">7972712360</span></p>
+            <p><strong>Type:</strong> <span id="userType">smallholder</span></p>
+            <p><strong>Member Since:</strong> <span id="joinDate">Feb 23, 2025</span></p>
+        </div>
+    </div>
 
-        <section id="weather-report">
-            <h2>Weather</h2>
-            <p>Access accurate and updated weather for your region.</p>
-        </section>
-            
-    </main>
+    <div class="card-container">
+        <div class="card">
+            <h2><i class="fas fa-flask"></i> Soil Testing</h2>
+            <p>Get comprehensive soil analysis reports with personalized recommendations.</p>
+        </div>
 
-    <footer>
-        <p> </p>
-    </footer>
+        <div class="card">
+            <h2><i class="fas fa-tractor"></i> Land Transformation</h2>
+            <p>Expert guidance for land preparation and sustainable farming practices.</p>
+        </div>
+
+        <div class="card">
+            <h2><i class="fas fa-cloud-sun-rain"></i> Weather Forecast</h2>
+            <p>Real-time weather updates and agricultural advisories.</p>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Initialization
+        const firebaseConfig = {
+            apiKey: "AIzaSyATODPEPLVaVg_Alrdet9flGaUpIOc8HD0",
+            authDomain: "asep-bbc34.firebaseapp.com",
+            projectId: "asep-bbc34",
+            storageBucket: "asep-bbc34.appspot.com",
+            messagingSenderId: "649819916593",
+            appId: "1:649819916593:web:7544bda86e7bae47f24810"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // Menu Toggle
+        function toggleMenu() {
+            document.getElementById('sideMenu').classList.toggle('open');
+        }
+
+        // Load User Data
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                db.collection('farmers').doc(user.uid).get().then(doc => {
+                    const data = doc.data();
+                    document.getElementById('userName').textContent = data.name;
+                    document.getElementById('userEmail').textContent = data.email;
+                    document.getElementById('userAddress').textContent = data.address;
+                    document.getElementById('userPhone').textContent = data.phone;
+                    document.getElementById('userType').textContent = data.farmerType;
+                    document.getElementById('joinDate').textContent = 
+                        new Date(data.createdAt.toDate()).toLocaleDateString('en-IN');
+                });
+            }
+        });
+
+        // Logout Function
+        function logout() {
+            auth.signOut().then(() => {
+                window.location.href = 'login.html';
+            });
+        }
+    </script>
 </body>
 </html>
