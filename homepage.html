@@ -25,27 +25,33 @@
             color: #333;
         }
 
+        /* News Ticker */
         .news-ticker {
             background: var(--primary-green);
-            color: white;
             padding: 12px 0;
             overflow: hidden;
             position: relative;
-            font-size: 0.9rem;
         }
 
-        .ticker-content {
+        .ticker-wrapper {
             display: inline-block;
             white-space: nowrap;
-            animation: ticker 25s linear infinite;
-            padding-left: 100%;
+            animation: ticker 30s linear infinite;
         }
 
         @keyframes ticker {
-            0% { transform: translateX(0); }
+            0% { transform: translateX(100%); }
             100% { transform: translateX(-100%); }
         }
 
+        .ticker-item {
+            display: inline-block;
+            padding: 0 40px;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        /* Header and Menu */
         header {
             background: linear-gradient(135deg, var(--primary-green), #1B5E20);
             color: white;
@@ -98,6 +104,7 @@
             padding: 5px;
         }
 
+        /* User Details */
         .user-info {
             text-align: center;
             padding: 20px 0;
@@ -116,6 +123,13 @@
             font-size: 0.9rem;
         }
 
+        .user-detail-item strong {
+            color: var(--primary-green);
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        /* Main Content */
         .main-content {
             max-width: 1200px;
             margin: 2rem auto;
@@ -143,6 +157,7 @@
             transform: translateY(-5px);
         }
 
+        /* News Section */
         .news-section {
             margin: 3rem 0;
         }
@@ -162,8 +177,8 @@
         }
 
         .news-image {
-            height: 180px;
-            background: #e0f2f1;
+            height: 200px;
+            background: #f5f5f5;
             background-size: cover;
             background-position: center;
         }
@@ -171,13 +186,34 @@
         .news-content {
             padding: 1.2rem;
         }
+
+        .news-meta {
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0;
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .read-more {
+            display: inline-block;
+            padding: 8px 15px;
+            background: var(--primary-green);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+
+        .read-more:hover {
+            background: #1B5E20;
+        }
     </style>
 </head>
 <body>
     <div class="news-ticker">
-        <div class="ticker-content">
-            🌱 किसान भाइयों का स्वागत है | 🚜 नई कृषि योजना की जानकारी के लिए पोर्टल देखें | 🌧️ इस सप्ताह हल्की बारिश की संभावना
-        </div>
+        <div class="ticker-wrapper" id="tickerWrapper"></div>
     </div>
 
     <header>
@@ -185,7 +221,6 @@
         <h1 style="text-align: center;">कृषि मित्र</h1>
     </header>
 
-    <!-- Side Menu -->
     <div class="side-menu" id="sideMenu">
         <div class="menu-header">
             <h3>User Profile</h3>
@@ -217,12 +252,11 @@
             </div>
         </div>
 
-        <div class="menu-item" onclick="logout()">
+        <div class="menu-item" onclick="logout()" style="margin-top: 20px; padding: 15px; cursor: pointer;">
             <i class="fas fa-sign-out-alt"></i> Logout
         </div>
     </div>
 
-    <!-- Main Content -->
     <div class="main-content">
         <div class="services-grid">
             <div class="service-card" onclick="showSoilTesting()">
@@ -234,7 +268,7 @@
             <div class="service-card" onclick="showWeather()">
                 <i class="fas fa-cloud-sun-rain fa-3x" style="color: var(--accent-orange);"></i>
                 <h2>मौसम पूर्वानुमान</h2>
-                <p>अगले 7 दिनों का विस्तृत मौसम अपडेट</p>
+                <p> विस्तृत मौसम अपडेट</p>
             </div>
 
             <div class="service-card" onclick="showMarketPrices()">
@@ -246,14 +280,12 @@
 
         <section class="news-section">
             <h2><i class="fas fa-newspaper"></i> नवीनतम कृषि समाचार</h2>
-            <div class="news-grid" id="newsContainer">
-                <!-- News will be loaded here -->
-            </div>
+            <div class="news-grid" id="newsContainer"></div>
         </section>
     </div>
 
     <script>
-        // Firebase Initialization
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyATODPEPLVaVg_Alrdet9flGaUpIOc8HD0",
             authDomain: "asep-bbc34.firebaseapp.com",
@@ -263,6 +295,7 @@
             appId: "1:649819916593:web:7544bda86e7bae47f24810"
         };
 
+        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
@@ -272,7 +305,7 @@
             document.getElementById('sideMenu').classList.toggle('open');
         }
 
-        // Navigation Functions
+        // Navigation
         function showSoilTesting() {
             window.location.href = 'soil-testing.html';
         }
@@ -285,7 +318,7 @@
             alert('Market prices feature coming soon!');
         }
 
-        // News Integration
+        // News Handling
         async function fetchAgricultureNews() {
             try {
                 const API_KEY = 'pub_71522e03c7c2929add512161f9ae8e7546ca3';
@@ -294,38 +327,61 @@
                 );
                 
                 const data = await response.json();
-                displayNews(data.results);
+                if(data.results) {
+                    updateTicker(data.results);
+                    displayNewsCards(data.results);
+                }
             } catch (error) {
                 console.error('Error fetching news:', error);
-                document.getElementById('newsContainer').innerHTML = `
-                    <div class="news-card">
-                        <div class="news-content">
-                            <p>Failed to load news. Please try again later.</p>
-                        </div>
-                    </div>`;
+                handleNewsErrors();
             }
         }
 
-        function displayNews(articles) {
+        function updateTicker(articles) {
+            const tickerWrapper = document.getElementById('tickerWrapper');
+            tickerWrapper.innerHTML = articles.slice(0, 5).map(article => `
+                <span class="ticker-item">
+                    ${article.title} 
+                    <i class="fas fa-circle" style="font-size: 4px; vertical-align: middle;"></i>
+                </span>`
+            ).join('');
+        }
+
+        function displayNewsCards(articles) {
             const container = document.getElementById('newsContainer');
             container.innerHTML = articles.slice(0, 6).map(article => `
                 <div class="news-card">
-                    <div class="news-image" style="background-image: url('${article.image_url || 'default-news.jpg'}')"></div>
+                    <div class="news-image" style="${article.image_url ? `background-image: url('${article.image_url}')` : ''}"></div>
                     <div class="news-content">
                         <h3>${article.title}</h3>
-                        <p style="margin: 10px 0; color: #666;">${article.description || 'Agriculture news update'}</p>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <small>${new Date(article.pubDate).toLocaleDateString()}</small>
-                            <a href="${article.link}" target="_blank" style="text-decoration: none; color: var(--accent-orange);">
-                                Read More <i class="fas fa-external-link-alt"></i>
-                            </a>
+                        <p class="news-description">${article.description || 'No description available'}</p>
+                        <div class="news-meta">
+                            <span>${article.source_id}</span>
+                            <span>${new Date(article.pubDate).toLocaleDateString('en-IN')}</span>
                         </div>
+                        <a href="${article.link}" target="_blank" class="read-more">
+                            Read More <i class="fas fa-external-link-alt"></i>
+                        </a>
                     </div>
                 </div>
             `).join('');
         }
 
-        // User Data Handling
+        function handleNewsErrors() {
+            document.getElementById('tickerWrapper').innerHTML = `
+                <span class="ticker-item">Latest news updates currently unavailable</span>
+            `;
+            document.getElementById('newsContainer').innerHTML = `
+                <div class="news-card">
+                    <div class="news-content">
+                        <h3>News Updates Unavailable</h3>
+                        <p>Please check your internet connection</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // User Data
         function loadUserData(user) {
             if (user) {
                 db.collection('farmers').doc(user.uid).get().then(doc => {
@@ -349,13 +405,11 @@
                                 });
                         }
                     }
-                }).catch(error => {
-                    console.error('Error loading user data:', error);
-                });
+                }).catch(console.error);
             }
         }
 
-        // Auth State Listener
+        // Auth Handling
         auth.onAuthStateChanged(user => {
             if (user) {
                 loadUserData(user);
@@ -364,7 +418,6 @@
             }
         });
 
-        // Logout Function
         function logout() {
             auth.signOut().then(() => {
                 window.location.href = 'login.html';
