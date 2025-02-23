@@ -64,21 +64,23 @@
 
         .auth-box {
             background: var(--cf-dark-surface);
-            border-radius: 12px; /* Slightly larger radius */
-            padding: 3rem; /* Increased padding */
+            border-radius: 12px;
+            padding: 3rem;
             border: 1px solid var(--cf-dark-border);
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-            min-height: 300px; /* Minimum height */
+            min-height: 300px;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            align-items: center; /* Added for horizontal centering */
+            justify-content: center; /* Added for vertical centering */
         }
 
         .cf-turnstile {
-            margin: 2rem 0; /* More spacing */
-            transform: scale(1.1); /* Slightly larger widget */
-            transform-origin: center;
+            margin: 2rem 0;
             width: 100%;
+            display: flex;
+            justify-content: center; /* Center horizontally */
+            transform: none; /* Removed previous scaling */
         }
 
         .status-message {
@@ -152,21 +154,21 @@
         </div>
         
         <div class="auth-box fade-in">
-            <div class="cf-turnstile" 
-                 data-sitekey="0x4AAAAAAA-HUBpovgMUuiTc"
-                 data-callback="onSuccess"
-                 data-theme="dark"
-                 data-language="en"
-                 data-appearance="always"
-                 data-retry="auto"
-                 data-retry-interval="1000"
-                 data-auto="true"></div>
-            
-            <div class="status-message" id="status">Verification confirmed. Redirecting...</div>
-            <div class="loading-bar">
-                <div class="loading-progress" id="loader"></div>
-            </div>
+        <div class="cf-turnstile" 
+             data-sitekey="0x4AAAAAAA-HUBpovgMUuiTc"
+             data-callback="onSuccess"
+             data-theme="dark"
+             data-language="en"
+             data-appearance="always"
+             data-retry="auto"
+             data-retry-interval="1000"
+             data-auto="true"></div>
+        
+        <div class="status-message" id="status">Verification confirmed. Redirecting...</div>
+        <div class="loading-bar">
+            <div class="loading-progress" id="loader"></div>
         </div>
+    </div>
     </div>
 
     <script>
