@@ -3,11 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login & Signup</title>
+  <title>Farmer Authentication</title>
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <!-- reCAPTCHA -->
+  <script src="https://www.google.com/recaptcha/api.js"></script>
   <style>
     body {
       margin: 0;
@@ -109,13 +111,22 @@
     .hidden {
       display: none;
     }
+    .form-container {
+      max-width: 450px;
+    }
+    
+    .progress-indicator {
+      display: none;
+      color: #27ae60;
+      margin: 10px 0;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <!-- Login Form -->
     <div class="form-container" id="login-form">
-      <h2>Welcome Back</h2>
+      <h2>Farmer Login</h2>
       <form id="loginForm">
         <div class="input-group">
           <input type="email" id="login-email" placeholder="Email" required>
@@ -124,14 +135,14 @@
           <input type="password" id="login-password" placeholder="Password" required>
         </div>
         <div id="login-error" class="error-message"></div>
-        <button type="submit">Login</button>
+        <button type="submit">Sign In</button>
       </form>
-      <p class="toggle-link" onclick="showSignup()">New user? Create an account</p>
+      <p class="toggle-link" onclick="showSignup()">New farmer? Register here</p>
     </div>
 
     <!-- Signup Form -->
     <div class="form-container hidden" id="signup-form">
-      <h2>Create Account</h2>
+      <h2>Farmer Registration</h2>
       <form id="signupForm">
         <div class="input-group">
           <input type="text" id="signup-name" placeholder="Full Name" required>
@@ -140,7 +151,7 @@
           <input type="email" id="signup-email" placeholder="Email Address" required>
         </div>
         <div class="input-group">
-          <input type="tel" id="signup-phone" placeholder="Phone Number" required>
+          <input type="tel" id="signup-phone" placeholder="Phone (+1234567890)" required>
         </div>
         <div class="input-group">
           <input type="text" id="signup-address" placeholder="Farm Address" required>
@@ -148,19 +159,29 @@
         <div class="input-group">
           <select id="signup-farmer-type" required>
             <option value="">Select Farmer Type</option>
-            <option value="smallholder">Smallholder Farmer</option>
-            <option value="commercial">Commercial Farmer</option>
-            <option value="cooperative">Agricultural Cooperative</option>
-            <option value="organic">Organic Farmer</option>
+            <option value="smallholder">Smallholder</option>
+            <option value="commercial">Commercial</option>
+            <option value="cooperative">Cooperative</option>
           </select>
         </div>
-        <div class="input-group">
-          <input type="password" id="signup-password" placeholder="Create Password (6+ characters)" required>
+        
+        <!-- OTP Section -->
+        <div class="otp-section">
+          <button type="button" id="send-otp-btn">Verify Phone</button>
+          <div class="input-group hidden" id="otp-group">
+            <input type="text" id="signup-otp" placeholder="Enter 6-digit OTP" maxlength="6" required>
+          </div>
         </div>
+
+        <div class="input-group">
+          <input type="password" id="signup-password" placeholder="Create Password (6+ chars)" required>
+        </div>
+        
         <div id="signup-error" class="error-message"></div>
-        <button type="submit">Register Now</button>
+        <div class="progress-indicator" id="signup-progress">Creating account...</div>
+        <button type="submit">Complete Registration</button>
       </form>
-      <p class="toggle-link" onclick="showLogin()">Already have an account? Sign in</p>
+      <p class="toggle-link" onclick="showLogin()">Already registered? Sign in</p>
     </div>
   </div>
 
@@ -174,15 +195,17 @@
       appId: "1:649819916593:web:7544bda86e7bae47f24810"
     };
 
-    // Initialize Firebase
     let auth, db;
+    let confirmationResult = null;
+    let verifiedPhone = null;
+
+    // Initialize Firebase
     try {
       firebase.initializeApp(firebaseConfig);
       auth = firebase.auth();
       db = firebase.firestore();
-      console.log("Firebase initialized successfully");
     } catch (error) {
-      console.error("Firebase initialization error:", error);
+      console.error("Firebase initialization failed", error);
     }
 
     // Login Handler
@@ -192,73 +215,134 @@
       const password = document.getElementById('login-password').value;
 
       try {
-        await auth.signInWithEmailAndPassword(email, password);
+        const userCredential = await auth.signInWithEmailAndPassword(email, password);
+        
+        // Check if email is verified
+        if (!userCredential.user.emailVerified) {
+          await auth.signOut();
+          showError('login-error', 'Please verify your email first');
+          return;
+        }
+
         window.location.href = 'homepage.html';
       } catch (error) {
         showError('login-error', getErrorMessage(error));
       }
     });
 
-    // Enhanced Signup Handler
-    document.getElementById('signupForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const email = document.getElementById('signup-email').value;
-      const password = document.getElementById('signup-password').value;
-      const name = document.getElementById('signup-name').value;
+    // Signup OTP Handler
+    document.getElementById('send-otp-btn').addEventListener('click', async () => {
       const phone = document.getElementById('signup-phone').value;
-      const address = document.getElementById('signup-address').value;
-      const farmerType = document.getElementById('signup-farmer-type').value;
+      if (!phone.match(/^\+\d{10,15}$/)) {
+        showError('signup-error', 'Invalid format: Use +countrycode');
+        return;
+      }
 
       try {
-        // Create user account
-        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-        
-        // Save additional user data to Firestore
-        await db.collection('users').doc(userCredential.user.uid).set({
-          name,
-          email,
-          phone,
-          address,
-          farmerType,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        const appVerifier = new firebase.auth.RecaptchaVerifier('send-otp-btn', {
+          size: 'invisible'
         });
 
-        alert('Registration successful! Please login.');
-        showLogin();
+        confirmationResult = await auth.signInWithPhoneNumber(phone, appVerifier);
+        document.getElementById('otp-group').classList.remove('hidden');
+        showError('signup-error', 'OTP sent successfully!');
       } catch (error) {
         showError('signup-error', getErrorMessage(error));
-        // Optional: Delete user if Firestore save fails
-        if (auth.currentUser) await auth.currentUser.delete();
       }
     });
 
-    // Helper Functions
-    function showError(elementId, message) {
-      const errorElement = document.getElementById(elementId);
-      errorElement.textContent = message;
-      setTimeout(() => errorElement.textContent = '', 5000);
-    }
-
-    function getErrorMessage(error) {
-      switch (error.code) {
-        case 'auth/email-already-in-use': return 'Email already registered';
-        case 'auth/invalid-email': return 'Invalid email address';
-        case 'auth/weak-password': return 'Password must be at least 6 characters';
-        case 'auth/user-not-found': return 'Account not found';
-        case 'auth/wrong-password': return 'Incorrect password';
-        default: return error.message || 'Operation failed. Please try again.';
+    // Complete Registration
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const otp = document.getElementById('signup-otp').value;
+      
+      if (!otp || !confirmationResult) {
+        showError('signup-error', 'Complete phone verification first');
+        return;
       }
+
+      showProgress(true);
+
+      try {
+        // Verify OTP
+        await confirmationResult.confirm(otp);
+        verifiedPhone = document.getElementById('signup-phone').value;
+
+        // Create email/password account
+        const email = document.getElementById('signup-email').value;
+        const password = document.getElementById('signup-password').value;
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+
+        // Store additional data
+        await db.collection('farmers').doc(userCredential.user.uid).set({
+          name: document.getElementById('signup-name').value,
+          email,
+          phone: verifiedPhone,
+          address: document.getElementById('signup-address').value,
+          farmerType: document.getElementById('signup-farmer-type').value,
+          verified: {
+            phone: true,
+            email: false
+          },
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        // Send email verification
+        await userCredential.user.sendEmailVerification();
+        
+        alert('Registration complete! Verify your email to login.');
+        showLogin();
+      } catch (error) {
+        showError('signup-error', getErrorMessage(error));
+        if (auth.currentUser) await auth.currentUser.delete();
+      } finally {
+        showProgress(false);
+      }
+    });
+
+    // UI Functions
+    function showProgress(show) {
+      document.getElementById('signup-progress').style.display = show ? 'block' : 'none';
     }
 
     function showLogin() {
       document.getElementById('signup-form').classList.add('hidden');
       document.getElementById('login-form').classList.remove('hidden');
+      resetSignupForm();
     }
 
     function showSignup() {
       document.getElementById('login-form').classList.add('hidden');
       document.getElementById('signup-form').classList.remove('hidden');
+      resetSignupForm();
+    }
+
+    function resetSignupForm() {
+      document.getElementById('signupForm').reset();
+      document.getElementById('otp-group').classList.add('hidden');
+      confirmationResult = null;
+      verifiedPhone = null;
+    }
+
+    function showError(elementId, message) {
+      const el = document.getElementById(elementId);
+      el.textContent = message;
+      setTimeout(() => el.textContent = '', 5000);
+    }
+
+    function getErrorMessage(error) {
+      const errorMap = {
+        'auth/invalid-email': 'Invalid email address',
+        'auth/user-disabled': 'Account disabled',
+        'auth/user-not-found': 'Account not found',
+        'auth/wrong-password': 'Incorrect password',
+        'auth/email-already-in-use': 'Email already registered',
+        'auth/operation-not-allowed': 'Operation not allowed',
+        'auth/weak-password': 'Password too weak',
+        'auth/invalid-verification-code': 'Invalid OTP code',
+        'auth/code-expired': 'OTP expired. Resend code'
+      };
+      return errorMap[error.code] || error.message;
     }
   </script>
 </body>
