@@ -382,50 +382,66 @@
         }
 
         // User Data
-        function loadUserData(user) {
-            if (user) {
-                db.collection('farmers').doc(user.uid).get().then(doc => {
-                    if (doc.exists) {
-                        const data = doc.data();
-                        document.getElementById('userName').textContent = data.name || 'Not provided';
-                        document.getElementById('userEmail').textContent = data.email;
-                        document.getElementById('userAddress').textContent = data.address || 'Not provided';
-                        document.getElementById('userPhone').textContent = data.phone || 'Not provided';
-                        document.getElementById('userType').textContent = data.farmerType || 'Not specified';
-                        
-                        if (data.createdAt) {
-                            const date = data.createdAt.toDate();
-                            document.getElementById('joinDate').textContent = 
-                                date.toLocaleDateString('en-IN', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                });
-                        }
-                    }
-                }).catch(console.error);
-            }
-        }
+        // In the loadUserData function
+function loadUserData(user) {
+    if (user) {
+        db.collection('farmers').doc(user.uid).get()
+            .then(doc => {
+                if (!doc.exists) {
+                    console.log('No user data found');
+                    return;
+                }
+                
+                const data = doc.data();
+                console.log('User data:', data); // Debug log
 
-        // Auth Handling
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                loadUserData(user);
-            } else {
-                window.location.href = 'login.html';
-            }
-        });
+                // Update profile fields
+                document.getElementById('userName').textContent = data.name || 'Not provided';
+                document.getElementById('userEmail').textContent = data.email || 'Not provided';
+                document.getElementById('userAddress').textContent = data.address || 'Not provided';
+                document.getElementById('userPhone').textContent = data.phone || 'Not provided';
+                document.getElementById('userType').textContent = data.farmerType || 'Not specified';
 
-        function logout() {
-            auth.signOut().then(() => {
-                window.location.href = 'login.html';
+                // Handle timestamp
+                if (data.createdAt) {
+                    const date = data.createdAt.toDate();
+                    document.getElementById('joinDate').textContent = date.toLocaleDateString('en-IN', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true
+                    });
+                } else {
+                    document.getElementById('joinDate').textContent = 'Unknown';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching user data:', error);
+                showProfileError();
             });
-        }
+    }
+}
 
-        // Initialize
-        fetchAgricultureNews();
+// Add this error display function
+function showProfileError() {
+    const elements = ['userName', 'userEmail', 'userAddress', 'userPhone', 'userType', 'joinDate'];
+    elements.forEach(id => {
+        document.getElementById(id).textContent = 'Error loading data';
+        document.getElementById(id).style.color = 'red';
+    });
+}
+
+// Update the auth state listener
+auth.onAuthStateChanged(user => {
+    if (user) {
+        loadUserData(user);
+    } else {
+        console.log('User not logged in, redirecting...');
+        window.location.href = 'login.html';
+    }
+});
     </script>
 </body>
 </html>
