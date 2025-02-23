@@ -285,7 +285,7 @@
     </div>
 
     <script>
-        // Firebase Configuration
+       // Updated Firebase initialization
         const firebaseConfig = {
             apiKey: "AIzaSyATODPEPLVaVg_Alrdet9flGaUpIOc8HD0",
             authDomain: "asep-bbc34.firebaseapp.com",
@@ -295,11 +295,78 @@
             appId: "1:649819916593:web:7544bda86e7bae47f24810"
         };
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
+        // Initialize Firebase only once
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         const auth = firebase.auth();
         const db = firebase.firestore();
 
+        // Enhanced auth state listener
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                console.log('User logged in:', user.uid);
+                loadUserData(user);
+                setupLogout();
+            } else {
+                console.log('No user, redirecting...');
+                window.location.href = 'login.html';
+            }
+        });
+
+        // Improved user data loading
+        async function loadUserData(user) {
+            try {
+                const doc = await db.collection('farmers').doc(user.uid).get();
+                
+                if (!doc.exists) {
+                    throw new Error('User document not found');
+                }
+
+                const data = doc.data();
+                
+                // Update UI elements
+                document.getElementById('userName').textContent = data.name || 'Not provided';
+                document.getElementById('userEmail').textContent = data.email || 'Not provided';
+                document.getElementById('userAddress').textContent = data.address || 'Not provided';
+                document.getElementById('userPhone').textContent = data.phone || 'Not provided';
+                document.getElementById('userType').textContent = data.farmerType || 'Not specified';
+
+                if (data.createdAt) {
+                    const date = data.createdAt.toDate();
+                    document.getElementById('joinDate').textContent = date.toLocaleString('en-IN', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                showErrorState();
+            }
+        }
+
+        // Proper logout implementation
+        function setupLogout() {
+            const logoutBtn = document.querySelector('.menu-item[onclick="logout()"]');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', logout);
+            }
+        }
+
+        async function logout() {
+            try {
+                await auth.signOut();
+                console.log('User logged out');
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('Logout error:', error);
+                alert('Logout failed: ' + error.message);
+            }
+        }
         // Menu Toggle
         function toggleMenu() {
             document.getElementById('sideMenu').classList.toggle('open');
