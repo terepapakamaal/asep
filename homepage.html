@@ -267,144 +267,131 @@
         </section>
     </div>
 
-    <script>
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyATODPEPLVaVg_Alrdet9flGaUpIOc8HD0",
-            authDomain: "asep-bbc34.firebaseapp.com",
-            projectId: "asep-bbc34",
-            storageBucket: "asep-bbc34.appspot.com",
-            messagingSenderId: "649819916593",
-            appId: "1:649819916593:web:7544bda86e7bae47f24810"
-        };
+   <script>
+    // Firebase Configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyATODPEPLVaVg_Alrdet9flGaUpIOc8HD0",
+        authDomain: "asep-bbc34.firebaseapp.com",
+        projectId: "asep-bbc34",
+        storageBucket: "asep-bbc34.appspot.com",
+        messagingSenderId: "649819916593",
+        appId: "1:649819916593:web:7544bda86e7bae47f24810"
+    };
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-        // Menu Toggle
-        function toggleMenu() {
-            document.getElementById('sideMenu').classList.toggle('open');
-        }
+    // Menu Toggle
+    function toggleMenu() {
+        const menu = document.getElementById('sideMenu');
+        menu.classList.toggle('open');
+    }
 
-        // Service Functions
-        function showSoilTesting() {
-            window.location.href = 'soil-testing.html';
-        }
+    // Service Functions
+    function showSoilTesting() {
+        window.location.href = 'soil-testing.html';
+    }
 
-        function showWeather() {
-            window.location.href = 'weather.html';
-        }
+    function showWeather() {
+        window.location.href = 'weather.html';
+    }
 
-        function showMarketPrices() {
-            alert('बाजार भाव सुविधा जल्द ही उपलब्ध होगी');
-        }
+    function showMarketPrices() {
+        alert('बाजार भाव सुविधा जल्द ही उपलब्ध होगी');
+    }
 
-        // News Integration
-        async function fetchAgricultureNews() {
-            try {
-                const API_KEY = 'pub_71522e03c7c2929add512161f9ae8e7546ca3';
-                const response = await fetch(
-                    `https://newsdata.io/api/1/news?apikey=${API_KEY}&q=agriculture%20OR%20farming&language=hi,en&country=in`
-                );
-                
-                const data = await response.json();
-                displayNews(data.results);
-            } catch (error) {
-                console.error('Error fetching news:', error);
-                document.getElementById('newsContainer').innerHTML = `
-                    <div class="news-card">
-                        <div class="news-content">
-                            <p>समाचार लोड करने में असमर्थ। कृपया बाद में पुनः प्रयास करें</p>
-                        </div>
-                    </div>`;
-            }
-        }
-
-        function displayNews(articles) {
-            const container = document.getElementById('newsContainer');
-            container.innerHTML = articles.slice(0, 6).map(article => `
+    // News Integration
+    async function fetchAgricultureNews() {
+        try {
+            const API_KEY = 'pub_71522e03c7c2929add512161f9ae8e7546ca3';
+            const response = await fetch(
+                `https://newsdata.io/api/1/news?apikey=${API_KEY}&q=agriculture%20OR%20farming&language=hi,en&country=in`
+            );
+            
+            const data = await response.json();
+            displayNews(data.results);
+        } catch (error) {
+            console.error('Error fetching news:', error);
+            document.getElementById('newsContainer').innerHTML = `
                 <div class="news-card">
-                    <div class="news-image" style="background-image: url('${article.image_url || 'default-news.jpg'}')"></div>
                     <div class="news-content">
-                        <h3>${article.title}</h3>
-                        <p style="margin: 10px 0; color: #666;">${article.description || 'कृषि समाचार'}</p>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <small>${new Date(article.pubDate).toLocaleDateString()}</small>
-                            <a href="${article.link}" target="_blank" style="text-decoration: none; color: var(--accent-orange);">
-                                पूरा पढ़ें <i class="fas fa-external-link-alt"></i>
-                            </a>
-                        </div>
+                        <p>समाचार लोड करने में असमर्थ। कृपया बाद में पुनः प्रयास करें</p>
+                    </div>
+                </div>`;
+        }
+    }
+
+    function displayNews(articles) {
+        const container = document.getElementById('newsContainer');
+        container.innerHTML = articles.slice(0, 6).map(article => `
+            <div class="news-card">
+                <div class="news-image" style="background-image: url('${article.image_url || 'default-news.jpg'}')"></div>
+                <div class="news-content">
+                    <h3>${article.title}</h3>
+                    <p style="margin: 10px 0; color: #666;">${article.description || 'कृषि समाचार'}</p>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <small>${new Date(article.pubDate).toLocaleDateString()}</small>
+                        <a href="${article.link}" target="_blank" style="text-decoration: none; color: var(--accent-orange);">
+                            पूरा पढ़ें <i class="fas fa-external-link-alt"></i>
+                        </a>
                     </div>
                 </div>
-            `).join('');
-        }
+            </div>
+        `).join('');
+    }
 
-        // Initialize
-        fetchAgricultureNews();
-        auth.onAuthStateChanged(loadUserData);
-
-        function loadUserData(user) {
-            if (user) {
-                db.collection('farmers').doc(user.uid).get().then(doc => {
+    // Load User Data
+    function loadUserData(user) {
+        if (user) {
+            db.collection('farmers').doc(user.uid).get().then(doc => {
+                if (doc.exists) {
                     const data = doc.data();
-                    document.getElementById('userName').textContent = data.name;
+                    document.getElementById('userName').textContent = data.name || 'Not provided';
                     document.getElementById('userEmail').textContent = data.email;
-                });
-            }
-        }
-        function loadUserData(user) {
-            if (user) {
-                db.collection('farmers').doc(user.uid).get().then(doc => {
-                    if (doc.exists) {
-                        const data = doc.data();
-                        document.getElementById('userName').textContent = data.name || 'Not provided';
-                        document.getElementById('userEmail').textContent = data.email;
-                        document.getElementById('userAddress').textContent = data.address || 'Not provided';
-                        document.getElementById('userPhone').textContent = data.phone || 'Not provided';
-                        document.getElementById('userType').textContent = data.farmerType || 'Not specified';
-                        
-                        // Format timestamp
-                        if (data.createdAt) {
-                            const date = data.createdAt.toDate();
-                            document.getElementById('joinDate').textContent = 
-                                date.toLocaleDateString('en-IN', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                });
-                        }
+                    document.getElementById('userAddress').textContent = data.address || 'Not provided';
+                    document.getElementById('userPhone').textContent = data.phone || 'Not provided';
+                    document.getElementById('userType').textContent = data.farmerType || 'Not specified';
+                    
+                    // Format timestamp
+                    if (data.createdAt) {
+                        const date = data.createdAt.toDate();
+                        document.getElementById('joinDate').textContent = 
+                            date.toLocaleDateString('en-IN', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            });
                     }
-                }).catch(error => {
-                    console.error('Error fetching user data:', error);
-                    showError('menuError', 'Failed to load profile data');
-                });
-            }
-        }
-
-        // Toggle menu function
-        function toggleMenu() {
-            const menu = document.getElementById('sideMenu');
-            menu.classList.toggle('open');
-        }
-
-        // Initialize auth listener
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                loadUserData(user);
-            } else {
-                window.location.href = 'login.html';
-            }
-        });
-
-        function logout() {
-            auth.signOut().then(() => {
-                window.location.href = 'login.html';
+                }
+            }).catch(error => {
+                console.error('Error fetching user data:', error);
+                showError('menuError', 'Failed to load profile data');
             });
         }
-    </script>
+    }
+
+    // Initialize Auth Listener
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            loadUserData(user);
+        } else {
+            window.location.href = 'login.html';
+        }
+    });
+
+    // Logout Function
+    function logout() {
+        auth.signOut().then(() => {
+            window.location.href = 'login.html';
+        });
+    }
+
+    // Initialize News
+    fetchAgricultureNews();
+</script>
 </body>
 </html>
