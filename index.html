@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Access Portal</title>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .background-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(0,0,0,0.9), rgba(40,40,40,0.8));
+            z-index: 1;
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+            background: linear-gradient(45deg, #00ff88, #00a3ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .auth-box {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .status-message {
+            margin-top: 1.5rem;
+            font-size: 1.1rem;
+            color: #00ff88;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-bar {
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, #00ff88, #00a3ff);
+            margin-top: 1.5rem;
+            transition: width 0.5s ease;
+            border-radius: 2px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @media (max-width: 768px) {
+            .auth-box {
+                padding: 2rem;
+            }
+            
+            .logo {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-overlay"></div>
+    <div class="container">
+        <div class="logo fade-in">SECURE PORTAL</div>
+        
+        <div class="auth-box fade-in">
+            <div class="cf-turnstile" 
+                 data-sitekey="0x4AAAAAAA-HUBpovgMUuiTc"
+                 data-callback="onSuccess"
+                 data-theme="dark"
+                 data-language="en"
+                 data-appearance="always"
+                 data-retry="auto"
+                 data-retry-interval="1000"
+                 data-auto="true"
+                 style="display: flex; justify-content: center;"></div>
+            
+            <div class="status-message" id="status">Verification Successful! Redirecting...</div>
+            <div class="loading-bar" id="loader"></div>
+        </div>
+    </div>
+
+    <script>
+        function onSuccess(token) {
+            const status = document.getElementById('status');
+            const loader = document.getElementById('loader');
+            
+            status.style.opacity = '1';
+            loader.style.width = '100%';
+            
+            setTimeout(() => {
+                window.location.href = '/login'; // Change to your login page URL
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
