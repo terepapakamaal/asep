@@ -319,7 +319,13 @@
             <div class="service-card" onclick="showWeather()">
                 <i class="fas fa-cloud-sun-rain fa-3x" style="color: var(--accent-orange);"></i>
                 <h2>मौसम पूर्वानुमान</h2>
-                <p> विस्तृत मौसम अपडेट</p>
+                <p>विस्तृत मौसम अपडेट</p>
+            </div>
+
+            <div class="land-transform-card" onclick="showLandTransformation()">
+                <i class="fas fa-tractor fa-3x" style="color: var(--land-color);"></i>
+                <h2>भूमि परिवर्तन</h2>
+                <p>उन्नत कृषि तकनीकों के साथ भूमि उपयोग अनुकूलन</p>
             </div>
 
             <div class="service-card" onclick="showMarketPrices()">
@@ -469,6 +475,45 @@
                 });
             }
         }
+        // Add Land Transformation Function
+        function showLandTransformation() {
+            window.location.href = 'land-transformation.html';
+            // Or temporary alert if page not ready
+            // alert('Land transformation analytics coming soon!');
+        }
+
+        // News Ticker Functions
+        async function fetchAgricultureNews() {
+            try {
+                const API_KEY = 'pub_71522e03c7c2929add512161f9ae8e7546ca3';
+                const response = await fetch(
+                    `https://newsdata.io/api/1/news?apikey=${API_KEY}&q=agriculture%20OR%20farming&language=en&country=in`
+                );
+                
+                const data = await response.json();
+                if(data.results) {
+                    updateTicker(data.results);
+                }
+            } catch (error) {
+                document.getElementById('tickerWrapper').innerHTML = `
+                    <span class="ticker-item">कृषि समाचार अपडेट अस्थायी रूप से उपलब्ध नहीं</span>
+                `;
+            }
+        }
+
+        function updateTicker(articles) {
+            const tickerWrapper = document.getElementById('tickerWrapper');
+            tickerWrapper.innerHTML = articles.slice(0, 5).map(article => `
+                <span class="ticker-item">
+                    ${article.title} 
+                    <i class="fas fa-circle" style="font-size: 4px;"></i>
+                </span>`
+            ).join('');
+        }
+
+        // Initialize news ticker on page load
+        fetchAgricultureNews();
+
 
         function setupLogout() {
             document.querySelector('.menu-item[onclick="logout()"]').addEventListener('click', logout);
