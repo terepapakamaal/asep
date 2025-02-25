@@ -286,9 +286,16 @@
 </style>
 </head>
 <body>
-    <div class="news-ticker">
-        <div class="ticker-wrapper" id="tickerWrapper"></div>
+     <div class="news-ticker">
+        <div class="ticker-wrapper">
+            <span class="ticker-item">किसान क्रेडिट कार्ड योजना के लिए आवेदन प्रक्रिया सरल की गई</span>
+            <span class="ticker-item">नई कृषि बिल 2023: किसानों को मिलेंगे ये लाभ</span>
+            <span class="ticker-item">मानसून अपडेट: इस सप्ताह अच्छी बारिश का अनुमान</span>
+            <span class="ticker-item">जैविक खेती पर सरकार दे रही 50% अनुदान</span>
+            <span class="ticker-item">नई मृदा स्वास्थ्य योजना: अपने खेत की मिट्टी कराएं मुफ्त जांच</span>
+        </div>
     </div>
+
 
     <header>
         <i class="fas fa-bars menu-icon" onclick="toggleMenu()"></i>
@@ -452,6 +459,8 @@
     </div>
 
     <script>
+        const auth = firebase.auth();
+        const db = firebase.firestore();
         const firebaseConfig = {
             apiKey: "AIzaSyATODPEPLVaVg_Alrdet9flGaUpIOc8HD0",
             authDomain: "asep-bbc34.firebaseapp.com",
@@ -464,8 +473,7 @@
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+        
 
         auth.onAuthStateChanged(user => {
             if (user) {
