@@ -7,6 +7,36 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        .booking-section {
+            margin-top: 3rem;
+            background: var(--glass-effect);
+            border-radius: 1.5rem;
+            padding: 2rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .form-input {
+            padding: 1rem;
+            border: 2px solid var(--primary);
+            border-radius: 0.8rem;
+            width: 100%;
+            background: var(--card-bg);
+        }
+
+        .success-message {
+            color: var(--primary);
+            background: #e8f5e9;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+            display: none;
+        }
         :root {
             --primary: #2E7D32;
             --secondary: #4CAF50;
@@ -175,10 +205,25 @@
             <div class="crop-grid" id="cropResults"></div>
         </div>
     </div>
+    <div class="booking-section">
+            <h2>Book Professional Soil Test</h2>
+            <div class="form-grid">
+                <input type="text" id="userName" class="form-input" placeholder="Full Name">
+                <input type="email" id="userEmail" class="form-input" placeholder="Email Address">
+                <input type="tel" id="userPhone" class="form-input" placeholder="Phone Number">
+                <input type="text" id="userLocation" class="form-input" placeholder="Location">
+                <input type="date" id="testDate" class="form-input">
+            </div>
+            <button class="search-button" onclick="bookSoilTest()">
+                <i class="fas fa-calendar-check"></i> Book Soil Test
+            </button>
+            <div class="success-message" id="bookingStatus"></div>
+        </div>
+    </div>
 
     <script>
         // Crop database with detailed parameters
-        const cropDatabase = [
+         const cropDatabase = [
             {
                 name: "Tomato",
                 ph: [5.5, 7.0],
@@ -214,8 +259,75 @@
                 water: "Regular watering",
                 nutrients: "N-P-K: 3-12-12",
                 duration: "70-80 days"
+            },
+            {
+                name: "Potato",
+                ph: [4.8, 6.5],
+                humidity: "moderate",
+                temp: [15, 20],
+                water: "Consistent moisture",
+                nutrients: "N-P-K: 5-10-10",
+                duration: "90-120 days"
+            },
+            {
+                name: "Corn",
+                ph: [5.8, 7.0],
+                humidity: "moderate",
+                temp: [21, 30],
+                water: "Deep watering",
+                nutrients: "N-P-K: 10-10-10",
+                duration: "60-100 days"
+            },
+            {
+                name: "Spinach",
+                ph: [6.0, 7.5],
+                humidity: "high",
+                temp: [10, 20],
+                water: "Frequent light watering",
+                nutrients: "N-P-K: 4-6-3",
+                duration: "40-50 days"
             }
         ];
+         // Initialize Firebase
+        const firebaseConfig = {
+      apiKey: "AIzaSyATODPEPLVaVg_Alrdet9flGaUpIOc8HD0",
+      authDomain: "asep-bbc34.firebaseapp.com",
+      projectId: "asep-bbc34",
+      storageBucket: "asep-bbc34.appspot.com",
+      messagingSenderId: "649819916593",
+      appId: "1:649819916593:web:7544bda86e7bae47f24810"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.firestore();
+
+        async function bookSoilTest() {
+            const bookingData = {
+                name: document.getElementById('userName').value,
+                email: document.getElementById('userEmail').value,
+                phone: document.getElementById('userPhone').value,
+                location: document.getElementById('userLocation').value,
+                date: document.getElementById('testDate').value,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            try {
+                await db.collection('soilTests').add(bookingData);
+                document.getElementById('bookingStatus').innerHTML = `
+                    <i class="fas fa-check-circle"></i>
+                    Thank you! Soil test booked. Report will be sent to ${bookingData.email} and ${bookingData.phone}
+                `;
+                document.getElementById('bookingStatus').style.display = 'block';
+            } catch (error) {
+                document.getElementById('bookingStatus').innerHTML = `
+                    <i class="fas fa-exclamation-circle"></i>
+                    Error: ${error.message}
+                `;
+                document.getElementById('bookingStatus').style.display = 'block';
+            }
+        }
 
         function analyzeSoil() {
             const ph = parseFloat(document.getElementById('phInput').value);
