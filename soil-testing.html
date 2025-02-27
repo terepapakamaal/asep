@@ -343,25 +343,41 @@
             }
         }
 
-        function analyzeSoil() {
-            const ph = parseFloat(document.getElementById('phInput').value);
-            const humidity = document.getElementById('humidityInput').value;
-            const temp = parseFloat(document.getElementById('tempInput').value);
+         function analyzeSoil() {
+        const ph = parseFloat(document.getElementById('phInput').value);
+        const humidity = document.getElementById('humidityInput').value;
+        const temp = parseFloat(document.getElementById('tempInput').value);
+        const errorEl = document.getElementById('errorMessage');
 
-            if (!ph || !temp) {
-                showStatus('Please fill all soil parameters!', 'error', 'errorMessage');
-                document.getElementById('resultCard').style.display = 'none';
-                return;
-            }
-
-            const suitableCrops = cropDatabase.filter(crop => 
-                ph >= crop.ph[0] && ph <= crop.ph[1] &&
-                humidity === crop.humidity &&
-                temp >= crop.temp[0] && temp <= crop.temp[1]
-            );
-
-            displayResults(suitableCrops);
+        // Input validation
+        if (isNaN(ph) || isNaN(temp)) {
+            showStatus('Please fill all soil parameters!', 'error', 'errorMessage');
+            document.getElementById('resultCard').style.display = 'none';
+            return;
         }
+
+        if (ph < 0 || ph > 14) {
+            showStatus('pH value must be between 0 and 14!', 'error', 'errorMessage');
+            document.getElementById('resultCard').style.display = 'none';
+            return;
+        }
+
+        if (temp < 0 || temp > 50) {
+            showStatus('Temperature must be between 0°C and 50°C!', 'error', 'errorMessage');
+            document.getElementById('resultCard').style.display = 'none';
+            return;
+        }
+
+        // Filter crops based on parameters
+        const suitableCrops = cropDatabase.filter(crop => 
+            ph >= crop.ph[0] && ph <= crop.ph[1] &&
+            humidity === crop.humidity &&
+            temp >= crop.temp[0] && temp <= crop.temp[1]
+        );
+
+        displayResults(suitableCrops);
+    }
+
 
         function displayResults(crops) {
             const resultsContainer = document.getElementById('cropResults');
