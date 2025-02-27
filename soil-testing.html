@@ -3,40 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Soil Testing</title>
+    <title>SoilScan Pro - Advanced Soil Analysis</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <style>
-        .booking-section {
-            margin-top: 3rem;
-            background: var(--glass-effect);
-            border-radius: 1.5rem;
-            padding: 2rem;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin: 2rem 0;
-        }
-
-        .form-input {
-            padding: 1rem;
-            border: 2px solid var(--primary);
-            border-radius: 0.8rem;
-            width: 100%;
-            background: var(--card-bg);
-        }
-
-        .success-message {
-            color: var(--primary);
-            background: #e8f5e9;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin: 1rem 0;
-            display: none;
-        }
         :root {
             --primary: #2E7D32;
             --secondary: #4CAF50;
@@ -46,7 +18,19 @@
             --glass-effect: rgba(255, 255, 255, 0.25);
         }
 
-        /* Consistent weather app UI styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -56,7 +40,6 @@
         header {
             text-align: center;
             padding: 4rem 0;
-            backdrop-filter: blur(10px);
         }
 
         h1 {
@@ -152,20 +135,50 @@
             transform: translateY(-5px);
         }
 
-        .error-message {
-            color: #d32f2f;
-            background: #ffebee;
+        .booking-section {
+            margin-top: 3rem;
+            background: var(--glass-effect);
+            border-radius: 1.5rem;
+            padding: 2rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .form-input {
+            padding: 1rem;
+            border: 2px solid var(--primary);
+            border-radius: 0.8rem;
+            width: 100%;
+            background: var(--card-bg);
+        }
+
+        .status-message {
             padding: 1rem;
             border-radius: 0.5rem;
             margin: 1rem 0;
             display: none;
+        }
+
+        .status-message.success {
+            background: #e8f5e9;
+            color: #2E7D32;
+        }
+
+        .status-message.error {
+            background: #ffebee;
+            color: #d32f2f;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>scrop predictor</h1>
+            <h1>SoilScan Pro</h1>
             <p class="tagline">Smart Agricultural Analysis</p>
         </header>
 
@@ -196,16 +209,15 @@
             <button class="search-button" onclick="analyzeSoil()">
                 <i class="fas fa-seedling"></i> Analyze Soil
             </button>
-
-            <div class="error-message" id="errorMessage"></div>
+            <div class="status-message error" id="errorMessage"></div>
         </div>
 
         <div class="result-card" id="resultCard" style="display: none;">
             <h2>Recommended Crops</h2>
             <div class="crop-grid" id="cropResults"></div>
         </div>
-    </div>
-    <div class="booking-section">
+
+        <div class="booking-section">
             <h2>Book Professional Soil Test</h2>
             <div class="form-grid">
                 <input type="text" id="userName" class="form-input" placeholder="Full Name">
@@ -217,13 +229,29 @@
             <button class="search-button" onclick="bookSoilTest()">
                 <i class="fas fa-calendar-check"></i> Book Soil Test
             </button>
-            <div class="success-message" id="bookingStatus"></div>
+            <div class="status-message" id="bookingStatus"></div>
         </div>
     </div>
 
     <script>
-        // Crop database with detailed parameters
-         const cropDatabase = [
+        // Replace with your Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyATODPEPLVaVg_Alrdet9flGaUpIOc8HD0",
+            authDomain: "asep-bbc34.firebaseapp.com",
+            projectId: "asep-bbc34",
+            storageBucket: "asep-bbc34.appspot.com",
+            messagingSenderId: "649819916593",
+            appId: "1:649819916593:web:7544bda86e7bae47f24810"
+        };
+
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.firestore();
+
+        // Crop Database
+        const cropDatabase = [
             {
                 name: "Tomato",
                 ph: [5.5, 7.0],
@@ -288,44 +316,30 @@
                 duration: "40-50 days"
             }
         ];
-         // Initialize Firebase
-        const firebaseConfig = {
-      apiKey: "AIzaSyATODPEPLVaVg_Alrdet9flGaUpIOc8HD0",
-      authDomain: "asep-bbc34.firebaseapp.com",
-      projectId: "asep-bbc34",
-      storageBucket: "asep-bbc34.appspot.com",
-      messagingSenderId: "649819916593",
-      appId: "1:649819916593:web:7544bda86e7bae47f24810"
-        };
-
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        const db = firebase.firestore();
 
         async function bookSoilTest() {
             const bookingData = {
-                name: document.getElementById('userName').value,
-                email: document.getElementById('userEmail').value,
-                phone: document.getElementById('userPhone').value,
-                location: document.getElementById('userLocation').value,
+                name: document.getElementById('userName').value.trim(),
+                email: document.getElementById('userEmail').value.trim(),
+                phone: document.getElementById('userPhone').value.trim(),
+                location: document.getElementById('userLocation').value.trim(),
                 date: document.getElementById('testDate').value,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             };
 
+            // Validation
+            if (!bookingData.name || !bookingData.email || !bookingData.phone || !bookingData.location || !bookingData.date) {
+                showStatus('Please fill all required fields!', 'error', 'bookingStatus');
+                return;
+            }
+
             try {
                 await db.collection('soilTests').add(bookingData);
-                document.getElementById('bookingStatus').innerHTML = `
-                    <i class="fas fa-check-circle"></i>
-                    Thank you! Soil test booked. Report will be sent to ${bookingData.email} and ${bookingData.phone}
-                `;
-                document.getElementById('bookingStatus').style.display = 'block';
+                showStatus(`Booking successful! Report will be sent to ${bookingData.email}`, 'success', 'bookingStatus');
+                clearForm();
             } catch (error) {
-                document.getElementById('bookingStatus').innerHTML = `
-                    <i class="fas fa-exclamation-circle"></i>
-                    Error: ${error.message}
-                `;
-                document.getElementById('bookingStatus').style.display = 'block';
+                console.error('Booking error:', error);
+                showStatus(`Booking failed: ${error.message}`, 'error', 'bookingStatus');
             }
         }
 
@@ -333,18 +347,13 @@
             const ph = parseFloat(document.getElementById('phInput').value);
             const humidity = document.getElementById('humidityInput').value;
             const temp = parseFloat(document.getElementById('tempInput').value);
-            const errorEl = document.getElementById('errorMessage');
-            const resultCard = document.getElementById('resultCard');
 
-            // Input validation
             if (!ph || !temp) {
-                errorEl.textContent = "Please fill all required parameters!";
-                errorEl.style.display = 'block';
-                resultCard.style.display = 'none';
+                showStatus('Please fill all soil parameters!', 'error', 'errorMessage');
+                document.getElementById('resultCard').style.display = 'none';
                 return;
             }
 
-            // Filter crops
             const suitableCrops = cropDatabase.filter(crop => 
                 ph >= crop.ph[0] && ph <= crop.ph[1] &&
                 humidity === crop.humidity &&
@@ -356,30 +365,34 @@
 
         function displayResults(crops) {
             const resultsContainer = document.getElementById('cropResults');
-            resultsContainer.innerHTML = '';
-
-            if (crops.length === 0) {
-                resultsContainer.innerHTML = '<p>No suitable crops found for these conditions</p>';
-                return;
-            }
-
-            crops.forEach(crop => {
-                const cropCard = document.createElement('div');
-                cropCard.className = 'crop-card';
-                cropCard.innerHTML = `
-                    <h3>${crop.name}</h3>
-                    <div class="crop-details">
+            resultsContainer.innerHTML = crops.length ? 
+                crops.map(crop => `
+                    <div class="crop-card">
+                        <h3>${crop.name}</h3>
                         <p><i class="fas fa-tint"></i> ${crop.water}</p>
                         <p><i class="fas fa-thermometer-half"></i> ${crop.temp.join('°C - ')}°C</p>
                         <p><i class="fas fa-clock"></i> ${crop.duration}</p>
                         <p><i class="fas fa-flask"></i> ${crop.nutrients}</p>
                     </div>
-                `;
-                resultsContainer.appendChild(cropCard);
-            });
+                `).join('') : 
+                '<p>No suitable crops found for these conditions</p>';
 
-            document.getElementById('errorMessage').style.display = 'none';
             document.getElementById('resultCard').style.display = 'block';
+            showStatus('', 'clear', 'errorMessage');
+        }
+
+        function showStatus(message, type, elementId) {
+            const el = document.getElementById(elementId);
+            el.innerHTML = message ? `<i class="fas fa-${type === 'success' ? 'check' : 'exclamation'}-circle"></i> ${message}` : '';
+            el.className = `status-message ${type}`;
+            el.style.display = message ? 'block' : 'none';
+            
+            if (type === 'success') setTimeout(() => el.style.display = 'none', 5000);
+        }
+
+        function clearForm() {
+            ['userName', 'userEmail', 'userPhone', 'userLocation', 'testDate']
+                .forEach(id => document.getElementById(id).value = '');
         }
     </script>
 </body>
