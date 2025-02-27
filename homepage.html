@@ -458,59 +458,70 @@
         </div>
     </div>
 
-    <script>
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        const firebaseConfig = {
-            apiKey: "AIzaSyATODPEPLVaVg_Alrdet9flGaUpIOc8HD0",
-            authDomain: "asep-bbc34.firebaseapp.com",
-            projectId: "asep-bbc34",
-            storageBucket: "asep-bbc34.appspot.com",
-            messagingSenderId: "649819916593",
-            appId: "1:649819916593:web:7544bda86e7bae47f24810"
-        };
+   <script>
+    // Firebase Initialization
+    const firebaseConfig = {
+        apiKey: "AIzaSyATODPEPLVaVg_Alrdet9flGaUpIOc8HD0",
+        authDomain: "asep-bbc34.firebaseapp.com",
+        projectId: "asep-bbc34",
+        storageBucket: "asep-bbc34.appspot.com",
+        messagingSenderId: "649819916593",
+        appId: "1:649819916593:web:7544bda86e7bae47f24810"
+    };
 
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        
+    // Initialize Firebase only once
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                loadUserData(user);
-                setupLogout();
-                if (!user.emailVerified) {
-                    alert('Please verify your email address to access all features');
-                }
-            } else {
-                window.location.href = 'login.html';
+    // Auth State Listener
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            loadUserData(user);
+            if (!user.emailVerified) {
+                alert('Please verify your email address to access all features');
             }
+        } else {
+            window.location.href = 'login.html';
+        }
+    });
+
+    // Improved User Data Loading
+    async function loadUserData(user) {
+        try {
+            const doc = await db.collection('farmers').doc(user.uid).get();
+            if (!doc.exists) throw new Error('User data not found');
+            
+            const data = doc.data();
+            updateUI(data, user);
+            
+        } catch (error) {
+            console.error('Error loading user data:', error);
+            showDataError();
+        }
+    }
+
+    function updateUI(data, user) {
+        document.getElementById('userName').textContent = data.name || 'Not available';
+        document.getElementById('userEmail').textContent = user.email;
+        document.getElementById('userAddress').textContent = data.address || 'Not available';
+        document.getElementById('userPhone').textContent = data.phone || 'Not available';
+        document.getElementById('userType').textContent = data.farmerType || 'Not specified';
+
+        if (data.createdAt) {
+            const joinDate = data.createdAt.toDate().toLocaleDateString('en-IN');
+            document.getElementById('joinDate').textContent = joinDate;
+        }
+    }
+
+    function showDataError() {
+        document.querySelectorAll('.user-detail-item span').forEach(el => {
+            el.textContent = 'Failed to load data';
+            el.style.color = 'red';
         });
-
-        async function loadUserData(user) {
-            try {
-                const doc = await db.collection('farmers').doc(user.uid).get();
-                if (!doc.exists) throw new Error('User data not found');
-                
-                const data = doc.data();
-                document.getElementById('userName').textContent = data.name || 'Not available';
-                document.getElementById('userEmail').textContent = user.email;
-                document.getElementById('userAddress').textContent = data.address || 'Not available';
-                document.getElementById('userPhone').textContent = data.phone || 'Not available';
-                document.getElementById('userType').textContent = data.farmerType || 'Not specified';
-
-                if (data.createdAt) {
-                    const joinDate = data.createdAt.toDate().toLocaleDateString('en-IN');
-                    document.getElementById('joinDate').textContent = joinDate;
-                }
-            } catch (error) {
-                console.error('Error loading user data:', error);
-                document.querySelectorAll('.user-detail-item span').forEach(el => {
-                    el.textContent = 'Data unavailable';
-                    el.style.color = 'red';
-                });
-            }
-        }
+    }
         // Add Land Transformation Function
         function showLandTransformation() {
             window.location.href = 'land-transformation.html';
