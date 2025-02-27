@@ -236,19 +236,30 @@
     <script>
         // Replace with your Firebase config
         const firebaseConfig = {
-            apiKey: "AIzaSyATODPEPLVaVg_Alrdet9flGaUpIOc8HD0",
-            authDomain: "asep-bbc34.firebaseapp.com",
-            projectId: "asep-bbc34",
-            storageBucket: "asep-bbc34.appspot.com",
-            messagingSenderId: "649819916593",
-            appId: "1:649819916593:web:7544bda86e7bae47f24810"
-        };
+        apiKey: "AIzaSyATODPEPLVaVg_Alrdet9flGaUpIOc8HD0",
+        authDomain: "asep-bbc34.firebaseapp.com",
+        projectId: "asep-bbc34",
+        storageBucket: "asep-bbc34.appspot.com",
+        messagingSenderId: "649819916593",
+        appId: "1:649819916593:web:7544bda86e7bae47f24810"
+    };
 
-        // Initialize Firebase
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
+    // Initialize Firebase
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+
+    // Add authentication state listener
+    auth.onAuthStateChanged(user => {
+        if (!user) {
+            // Optional: Add your authentication logic here
+            auth.signInAnonymously().catch(error => {
+                console.error("Authentication error:", error);
+            });
         }
-        const db = firebase.firestore();
+    });
 
         // Crop Database
         const cropDatabase = [
@@ -318,15 +329,17 @@
         ];
 
         async function bookSoilTest() {
-            const bookingData = {
-                name: document.getElementById('userName').value.trim(),
-                email: document.getElementById('userEmail').value.trim(),
-                phone: document.getElementById('userPhone').value.trim(),
-                location: document.getElementById('userLocation').value.trim(),
-                date: document.getElementById('testDate').value,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            };
+    const user = auth.currentUser;
+    if (!user) {
+        showStatus('Please wait while we authenticate your session...', 'error', 'bookingStatus');
+        return;
+    }
 
+    const bookingData = {
+        uid: user.uid,
+        // ... rest of booking data
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    };
             // Validation
             if (!bookingData.name || !bookingData.email || !bookingData.phone || !bookingData.location || !bookingData.date) {
                 showStatus('Please fill all required fields!', 'error', 'bookingStatus');
