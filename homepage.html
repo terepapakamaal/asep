@@ -473,6 +473,8 @@ s0.parentNode.insertBefore(s1,s0);
 
    <script>
     // Firebase Initialization
+    <script>
+    // Firebase Initialization
     const firebaseConfig = {
         apiKey: "AIzaSyATODPEPLVaVg_Alrdet9flGaUpIOc8HD0",
         authDomain: "asep-bbc34.firebaseapp.com",
@@ -482,25 +484,46 @@ s0.parentNode.insertBefore(s1,s0);
         appId: "1:649819916593:web:7544bda86e7bae47f24810"
     };
 
-    // Initialize Firebase only once
-    if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
+    // Initialize Firebase services
+    let auth, db;
+
+    try {
+        // Initialize only once
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        auth = firebase.auth();
+        db = firebase.firestore();
+    } catch (error) {
+        console.error("Firebase initialization failed", error);
+        alert("Application initialization failed. Please refresh the page.");
     }
-    const auth = firebase.auth();
-    const db = firebase.firestore();
 
     // Auth State Listener
-    auth.onAuthStateChanged(user => {
-        if (user) {
-            loadUserData(user);
-            if (!user.emailVerified) {
-                alert('Please verify your email address to access all features');
+    if (auth) {
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                loadUserData(user);
+                if (!user.emailVerified) {
+                    alert('Please verify your email address to access all features');
+                }
+            } else {
+                window.location.href = 'login.html';
             }
-        } else {
-            window.location.href = 'login.html';
-        }
-    });
+        });
+    }
 
+    // Logout Function (updated)
+    async function logout() {
+        try {
+            if (!auth) throw new Error("Authentication service not available");
+            await auth.signOut();
+            window.location.href = 'login.html';
+        } catch (error) {
+            console.error('Logout error:', error);
+            alert('Logout failed: ' + error.message);
+        }
+    }
     // Improved User Data Loading
     async function loadUserData(user) {
         try {
