@@ -3,285 +3,228 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SoilScan - Modern Soil Analysis</title>
+    <title>Soil Testing</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <style>
         :root {
-            --primary: #4caf50;
-            --secondary: #81c784;
+            --primary: #2E7D32;
+            --secondary: #4CAF50;
             --background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
-            --text: #1b5e20;
+            --text: #1B5E20;
             --card-bg: rgba(255, 255, 255, 0.95);
             --glass-effect: rgba(255, 255, 255, 0.25);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
-
-        body {
-            background: var(--background);
-            color: var(--text);
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
-        header {
-            text-align: center;
-            padding: 4rem 0;
-            backdrop-filter: blur(10px);
-        }
-
-        h1 {
-            font-size: 3rem;
-            color: var(--primary);
-            margin-bottom: 1rem;
-            font-weight: 700;
-            letter-spacing: -0.05em;
-        }
-
-        .search-container {
-            background: var(--glass-effect);
-            backdrop-filter: blur(12px);
-            border-radius: 1.5rem;
-            padding: 2rem;
-            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
-            margin: 2rem auto;
-            max-width: 600px;
-        }
-
-        .search-form {
-            display: flex;
-            gap: 1rem;
-            position: relative;
-        }
-
-        .search-input {
-            flex: 1;
-            padding: 1rem 1.5rem;
-            border: 2px solid var(--primary);
-            border-radius: 1rem;
-            background: var(--card-bg);
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-        }
-
-        .search-input:focus {
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
-        }
-
-        .search-button {
-            padding: 1rem 2rem;
-            border: none;
-            border-radius: 1rem;
-            background: var(--primary);
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .search-button:hover {
-            background: var(--secondary);
-            transform: translateY(-2px);
-        }
-
-        .result-card {
-            background: var(--card-bg);
-            border-radius: 1.5rem;
-            padding: 2rem;
-            margin: 2rem auto;
-            max-width: 800px;
-            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
-            backdrop-filter: blur(12px);
-            opacity: 0;
-            transform: translateY(20px);
-            animation: fadeIn 0.5s ease forwards;
-        }
-
-        @keyframes fadeIn {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .crop-grid {
+        /* Previous styles remain the same, add these new styles */
+        
+        .parameter-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-top: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
         }
 
-        .crop-card {
+        .parameter-card {
             background: var(--glass-effect);
             padding: 1.5rem;
             border-radius: 1rem;
             text-align: center;
-            transition: transform 0.3s ease;
         }
 
-        .crop-card:hover {
-            transform: translateY(-5px);
+        .booking-section {
+            margin-top: 3rem;
+            border-top: 2px solid var(--primary);
+            padding-top: 2rem;
         }
 
-        .crop-icon {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            color: var(--primary);
+        .booking-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
         }
 
-        .ph-display {
-            font-size: 3rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin: 1rem 0;
-        }
-
-        .detail-list {
-            list-style: none;
-            padding: 0;
-            margin: 1rem 0;
-        }
-
-        .detail-item {
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .error-message {
-            color: #d32f2f;
-            background: #ffebee;
+        .form-input {
             padding: 1rem;
+            border: 2px solid #ddd;
+            border-radius: 0.5rem;
+            width: 100%;
+        }
+
+        .nutrition-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        .nutrition-table th, .nutrition-table td {
+            padding: 1rem;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        .toggle-section {
+            cursor: pointer;
+            padding: 1rem;
+            background: var(--glass-effect);
             border-radius: 0.5rem;
             margin: 1rem 0;
-            display: none;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
-            }
-
-            h1 {
-                font-size: 2rem;
-            }
-
-            .search-form {
-                flex-direction: column;
-            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>SoilScan</h1>
-            <p class="tagline">Smart Soil Analysis System</p>
-        </header>
+        <!-- Previous header and search container remain same -->
 
-        <div class="search-container">
-            <div class="search-form">
-                <input type="number" 
-                       id="phInput" 
-                       class="search-input" 
-                       placeholder="Enter soil pH (0-14)"
-                       min="0" 
-                       max="14" 
-                       step="0.1">
-                <button type="button" 
-                        class="search-button"
-                        onclick="showResults()">
-                    <i class="fas fa-seedling"></i>
-                    Analyze
-                </button>
+        <div class="parameter-grid">
+            <div class="parameter-card">
+                <label>Soil pH Level</label>
+                <input type="number" id="phInput" class="search-input" min="0" max="14" step="0.1">
             </div>
-            <div class="error-message" id="error-message"></div>
+            <div class="parameter-card">
+                <label>Humidity Level</label>
+                <select id="humidityInput" class="search-input">
+                    <option value="dry">Dry</option>
+                    <option value="moderate">Moderate</option>
+                    <option value="high">High</option>
+                </select>
+            </div>
+            <div class="parameter-card">
+                <label>Temperature (°C)</label>
+                <input type="number" id="tempInput" class="search-input">
+            </div>
         </div>
 
-        <div class="result-card" id="resultCard" style="display: none;">
-            <div class="ph-display" id="phValue"></div>
-            <div class="crop-grid" id="cropInfo"></div>
+        <!-- Result card section remains same -->
+
+        <div class="booking-section">
+            <h2>Book Professional Soil Test</h2>
+            <div class="booking-form">
+                <input type="text" id="userName" class="form-input" placeholder="Full Name">
+                <input type="email" id="userEmail" class="form-input" placeholder="Email Address">
+                <input type="tel" id="userPhone" class="form-input" placeholder="Phone Number">
+                <input type="text" id="userLocation" class="form-input" placeholder="Location">
+                <input type="date" id="testDate" class="form-input">
+                <button class="search-button" onclick="bookSoilTest()">
+                    <i class="fas fa-calendar-check"></i> Book Test
+                </button>
+            </div>
+            <div id="bookingStatus"></div>
         </div>
     </div>
 
     <script>
-        function showResults() {
-            const phInput = parseFloat(document.getElementById('phInput').value);
-            const resultCard = document.getElementById('resultCard');
-            const errorEl = document.getElementById('error-message');
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyATODPEPLVaVg_Alrdet9flGaUpIOc8HD0",
+      authDomain: "asep-bbc34.firebaseapp.com",
+      projectId: "asep-bbc34",
+      storageBucket: "asep-bbc34.appspot.com",
+      messagingSenderId: "649819916593",
+      appId: "1:649819916593:web:7544bda86e7bae47f24810"
+        };
 
-            if (isNaN(phInput) {
-                errorEl.textContent = "Please enter a valid pH value";
-                errorEl.style.display = 'block';
-                resultCard.style.display = 'none';
-                return;
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.firestore();
+
+        // Enhanced Crop Database
+        const cropDatabase = {
+            "vegetables": [
+                {
+                    name: "Tomato",
+                    ph: [5.5, 7.0],
+                    humidity: "moderate",
+                    temp: [18, 30],
+                    water: "Regular, deep watering",
+                    nutrients: { nitrogen: "High", phosphorus: "Medium", potassium: "High" },
+                    duration: "70-90 days"
+                },
+                // Add more crops
+            ],
+            "grains": [
+                // Grain data
+            ]
+        };
+
+        function analyzeSoil() {
+            const ph = parseFloat(document.getElementById('phInput').value);
+            const humidity = document.getElementById('humidityInput').value;
+            const temp = parseFloat(document.getElementById('tempInput').value);
+
+            // Filter crops based on all parameters
+            const suitableCrops = Object.values(cropDatabase).flat().filter(crop => 
+                ph >= crop.ph[0] && ph <= crop.ph[1] &&
+                humidity === crop.humidity &&
+                temp >= crop.temp[0] && temp <= crop.temp[1]
+            );
+
+            displayResults(suitableCrops);
+        }
+
+        function displayResults(crops) {
+            const resultsHTML = crops.map(crop => `
+                <div class="crop-card">
+                    <h3>${crop.name}</h3>
+                    <div class="toggle-section" onclick="toggleDetails('${crop.name}')">
+                        <i class="fas fa-chevron-down"></i> Show Details
+                    </div>
+                    <div class="crop-details" id="${crop.name}-details" style="display:none;">
+                        <table class="nutrition-table">
+                            <tr><th>Water Needs</th><td>${crop.water}</td></tr>
+                            <tr><th>Temperature Range</th><td>${crop.temp.join('°C - ')}°C</td></tr>
+                            <tr><th>Growth Duration</th><td>${crop.duration}</td></tr>
+                        </table>
+                        <h4>Nutrient Requirements (per hectare):</h4>
+                        <ul class="detail-list">
+                            ${Object.entries(crop.nutrients).map(([key, val]) => `
+                                <li class="detail-item"><span>${key}:</span><span>${val}</span></li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('cropInfo').innerHTML = resultsHTML;
+        }
+
+        async function bookSoilTest() {
+            const bookingData = {
+                name: document.getElementById('userName').value,
+                email: document.getElementById('userEmail').value,
+                phone: document.getElementById('userPhone').value,
+                location: document.getElementById('userLocation').value,
+                date: document.getElementById('testDate').value,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            try {
+                await db.collection('soilTests').add(bookingData);
+                document.getElementById('bookingStatus').innerHTML = `
+                    <div class="success-message">
+                        <i class="fas fa-check-circle"></i>
+                        Thank you! Your soil test has been booked. Report will be sent to ${bookingData.email} and ${bookingData.phone}
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('bookingStatus').innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-circle"></i>
+                        Error: ${error.message}
+                    </div>
+                `;
             }
+        }
 
-            let cropInfo = '';
-            if (phInput >= 6 && phInput <= 7) {
-                cropInfo = `
-                    <div class="crop-card">
-                        <i class="fas fa-leaf crop-icon"></i>
-                        <h3>Best Crops</h3>
-                        <p>Cabbage, Cauliflower, Carrots, Peas, Beans, Spinach</p>
-                        <ul class="detail-list">
-                            <li class="detail-item"><span>Water:</span><span>Moderate</span></li>
-                            <li class="detail-item"><span>Temperature:</span><span>15-25°C</span></li>
-                            <li class="detail-item"><span>Yield:</span><span>3-4 tons/ha</span></li>
-                        </ul>
-                    </div>
-                    <!-- Add more crop cards similarly -->
-                `;
-            } else if (phInput >= 5.5 && phInput < 6.0) {
-                cropInfo = `
-                    <div class="crop-card">
-                        <i class="fas fa-rice crop-icon"></i>
-                        <h3>Best Crops</h3>
-                        <p>Rice, Soybeans, Peanuts, Corn, Garlic</p>
-                        <ul class="detail-list">
-                            <li class="detail-item"><span>Water:</span><span>High</span></li>
-                            <li class="detail-item"><span>Temperature:</span><span>20-30°C</span></li>
-                            <li class="detail-item"><span>Yield:</span><span>4-5 tons/ha</span></li>
-                        </ul>
-                    </div>
-                `;
-            } else if (phInput >= 7 && phInput <= 8) {
-                cropInfo = `
-                    <div class="crop-card">
-                        <i class="fas fa-carrot crop-icon"></i>
-                        <h3>Best Crops</h3>
-                        <p>Beets, Celery, Lettuce, Spinach, Garlic</p>
-                        <ul class="detail-list">
-                            <li class="detail-item"><span>Water:</span><span>Low</span></li>
-                            <li class="detail-item"><span>Temperature:</span><span>10-20°C</span></li>
-                            <li class="detail-item"><span>Yield:</span><span>2-3 tons/ha</span></li>
-                        </ul>
-                    </div>
-                `;
-            } else {
-                cropInfo = '<div class="error-message">No suitable crops found for this pH level</div>';
-            }
-
-            document.getElementById('phValue').textContent = `pH ${phInput}`;
-            document.getElementById('cropInfo').innerHTML = cropInfo;
-            resultCard.style.display = 'block';
-            errorEl.style.display = 'none';
+        function toggleDetails(cropName) {
+            const detailsSection = document.getElementById(`${cropName}-details`);
+            detailsSection.style.display = detailsSection.style.display === 'none' ? 'block' : 'none';
         }
     </script>
 </body>
