@@ -6,10 +6,10 @@
     <title>Krishi Mitra - Farmer's Portal</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-   <style>
-    :root {
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <style>
+        :root {
         --primary-green: #2E7D32;
         --secondary-green: #4CAF50;
         --accent-orange: #FF9800;
@@ -286,24 +286,23 @@
             font-size: 1.5rem;
         }
     }
-</style>
+    </style>
     <!--Start of Tawk.to Script-->
-<script type="text/javascript">
-var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-(function(){
-var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-s1.async=true;
-s1.src='https://embed.tawk.to/67c0b6077ca289190cc5184e/1il4ce3v0';
-s1.charset='UTF-8';
-s1.setAttribute('crossorigin','*');
-s0.parentNode.insertBefore(s1,s0);
-})();
-</script>
-<!--End of Tawk.to Script-->
-    
+    <script type="text/javascript">
+        var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
+        (function () {
+            var s1 = document.createElement("script"), s0 = document.getElementsByTagName("script")[0];
+            s1.async = true;
+            s1.src = 'https://embed.tawk.to/67c0b6077ca289190cc5184e/1il4ce3v0';
+            s1.charset = 'UTF-8';
+            s1.setAttribute('crossorigin', '*');
+            s0.parentNode.insertBefore(s1, s0);
+        })();
+    </script>
+    <!--End of Tawk.to Script-->
 </head>
 <body>
-     <div class="news-ticker">
+    <div class="news-ticker">
         <div class="ticker-wrapper">
             <span class="ticker-item">किसान क्रेडिट कार्ड योजना के लिए आवेदन प्रक्रिया सरल की गई</span>
             <span class="ticker-item">नई कृषि बिल 2023: किसानों को मिलेंगे ये लाभ</span>
@@ -312,7 +311,6 @@ s0.parentNode.insertBefore(s1,s0);
             <span class="ticker-item">नई मृदा स्वास्थ्य योजना: अपने खेत की मिट्टी कराएं मुफ्त जांच</span>
         </div>
     </div>
-
 
     <header>
         <i class="fas fa-bars menu-icon" onclick="toggleMenu()"></i>
@@ -475,95 +473,105 @@ s0.parentNode.insertBefore(s1,s0);
         </div>
     </div>
 
-   <script>
-    // Firebase Initialization
     <script>
-    // Firebase Initialization
-    const firebaseConfig = {
-        apiKey: "AIzaSyATODPEPLVaVg_Alrdet9flGaUpIOc8HD0",
-        authDomain: "asep-bbc34.firebaseapp.com",
-        projectId: "asep-bbc34",
-        storageBucket: "asep-bbc34.appspot.com",
-        messagingSenderId: "649819916593",
-        appId: "1:649819916593:web:7544bda86e7bae47f24810"
-    };
+        // Firebase Initialization
+        const firebaseConfig = {
+            apiKey: "AIzaSyATODPEPLVaVg_Alrdet9flGaUpIOc8HD0",
+            authDomain: "asep-bbc34.firebaseapp.com",
+            projectId: "asep-bbc34",
+            storageBucket: "asep-bbc34.appspot.com",
+            messagingSenderId: "649819916593",
+            appId: "1:649819916593:web:7544bda86e7bae47f24810"
+        };
 
-    // Initialize Firebase services
-    let auth, db;
+        // Initialize Firebase services
+        let auth, db;
 
-    try {
-        // Initialize only once
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        auth = firebase.auth();
-        db = firebase.firestore();
-    } catch (error) {
-        console.error("Firebase initialization failed", error);
-        alert("Application initialization failed. Please refresh the page.");
-    }
-
-    // Auth State Listener
-    if (auth) {
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                loadUserData(user);
-                if (!user.emailVerified) {
-                    alert('Please verify your email address to access all features');
-                }
-            } else {
-                window.location.href = 'login.html';
+        try {
+            // Initialize only once
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
             }
-        });
-    }
-
-    // Logout Function (updated)
-    async function logout() {
-        try {
-            if (!auth) throw new Error("Authentication service not available");
-            await auth.signOut();
-            window.location.href = 'login.html';
+            auth = firebase.auth();
+            db = firebase.firestore();
         } catch (error) {
-            console.error('Logout error:', error);
-            alert('Logout failed: ' + error.message);
+            console.error("Firebase initialization failed", error);
+            alert("Application initialization failed. Please refresh the page.");
         }
-    }
-    // Improved User Data Loading
-    async function loadUserData(user) {
-        try {
-            const doc = await db.collection('farmers').doc(user.uid).get();
-            if (!doc.exists) throw new Error('User data not found');
-            
-            const data = doc.data();
-            updateUI(data, user);
-            
-        } catch (error) {
-            console.error('Error loading user data:', error);
-            showDataError();
+
+        // Auth State Listener
+        if (auth) {
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    loadUserData(user);
+                    if (!user.emailVerified) {
+                        alert('Please verify your email address to access all features');
+                    }
+                } else {
+                    window.location.href = 'login.html';
+                }
+            });
         }
-    }
 
-    function updateUI(data, user) {
-        document.getElementById('userName').textContent = data.name || 'Not available';
-        document.getElementById('userEmail').textContent = user.email;
-        document.getElementById('userAddress').textContent = data.address || 'Not available';
-        document.getElementById('userPhone').textContent = data.phone || 'Not available';
-        document.getElementById('userType').textContent = data.farmerType || 'Not specified';
-
-        if (data.createdAt) {
-            const joinDate = data.createdAt.toDate().toLocaleDateString('en-IN');
-            document.getElementById('joinDate').textContent = joinDate;
+        // Logout Function (updated)
+        async function logout() {
+            try {
+                if (!auth) throw new Error("Authentication service not available");
+                await auth.signOut();
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('Logout error:', error);
+                alert('Logout failed: ' + error.message);
+            }
         }
-    }
 
-    function showDataError() {
-        document.querySelectorAll('.user-detail-item span').forEach(el => {
-            el.textContent = 'Failed to load data';
-            el.style.color = 'red';
-        });
-    }
-        // Add Land Transformation Function
-        function showLandTransformation() {
+        // Improved User Data Loading
+        async function loadUserData(user) {
+            try {
+                const doc = await db.collection('farmers').doc(user.uid).get();
+                if (!doc.exists) throw new Error('User data not found');
+
+                const data = doc.data();
+                updateUI(data, user);
+
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                showDataError();
+            }
+        }
+
+        function updateUI(data, user) {
+            document.getElementById('userName').textContent = data.name || 'Not available';
+            document.getElementById('userEmail').textContent = user.email;
+            document.getElementById('userAddress').textContent = data.address || 'Not available';
+            document.getElementById('userPhone').textContent = data.phone || 'Not available';
+            document.getElementById('userType').textContent = data.farmerType || 'Not specified';
+
+            if (data.createdAt) {
+                const joinDate = data.createdAt.toDate().toLocaleDateString('en-IN');
+                document.getElementById('joinDate').textContent = joinDate;
+            }
+        }
+
+        function showDataError() {
+            document.querySelectorAll('.user-detail-item span').forEach(el => {
+                el.textContent = 'Failed to load data';
+                el.style.color = 'red';
+            });
+        }
+
+        // Menu Toggle Function
+        function toggleMenu() {
+            const sideMenu = document.getElementById('sideMenu');
+            sideMenu.classList.toggle('open');
+        }
+
+        // Add event listeners for menu toggle
+        document.querySelector('.menu-icon').addEventListener('click', toggleMenu);
+        document.querySelector('.close-btn').addEventListener('click', toggleMenu);
+
+       // Add Land Transformation Function
+       function showLandTransformation() {
             window.location.href = 'land-transformation.html';
             // Or temporary alert if page not ready
             // alert('Land transformation analytics coming soon!');
