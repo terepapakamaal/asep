@@ -383,6 +383,11 @@
                 <h2>बाजार भाव</h2>
                 <p>नवीनतम कृषि उत्पादों के बाजार भाव</p>
             </div>
+            <div class="service-card" onclick="showOrganicFarming()">
+        <i class="fas fa-seedling fa-3x" style="color: var(--secondary-green);"></i>
+        <h2>जैविक खेती</h2>
+        <p>जैविक खेती तकनीकें और सरकारी अनुदान जानकारी</p>
+    </div>
         </div>
 
         <section class="awareness-section">
@@ -623,7 +628,9 @@
             alert('Market prices feature coming soon!');
         }
 
-        // Initialize news ticker
+        function showOrganicFarming() {
+    window.location.href = 'organic-farming.html';
+}
        
     </script>
 </body>
