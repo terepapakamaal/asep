@@ -275,16 +275,7 @@
     </div>
 
     <script>
-        if (navigator.brave) {
-    const allow = confirm('For full functionality, Brave requires:\n' +
-        '1. Disable shields for this site\n' +
-        '2. Enable speech synthesis in flags\n\n' +
-        'Click OK to continue or Cancel to stay on page');
-    
-    if (!allow) {
-        window.location.href = 'https://example.com/brave-instructions.html';
-    }
-}
+        
         let currentSpeech = null;
         let currentSection = null;
 
