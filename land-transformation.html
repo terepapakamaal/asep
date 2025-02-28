@@ -4,7 +4,157 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Land Transformation</title>
-    <link rel="stylesheet" href="styles/land.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-green: #2E7D32;
+            --secondary-green: #4CAF50;
+            --accent-orange: #FF9800;
+            --background: #F8F9FA;
+            --text-dark: #2c3e50;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--background);
+            color: #333;
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-green), #1B5E20);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 20px;
+        }
+
+        .content-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .form-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        form {
+            display: grid;
+            gap: 1.5rem;
+            padding: 2rem;
+            background: #f8fff8;
+            border-radius: 10px;
+            border-left: 4px solid var(--primary-green);
+        }
+
+        label {
+            font-weight: 600;
+            color: var(--primary-green);
+        }
+
+        input, select {
+            padding: 0.8rem;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            width: 100%;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-green);
+        }
+
+        button {
+            background: var(--primary-green);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background: #1B5E20;
+        }
+
+        .info-card {
+            background: #f8fff8;
+            padding: 2rem;
+            border-radius: 10px;
+            border-left: 4px solid var(--accent-orange);
+            margin: 2rem 0;
+        }
+
+        .info-card h2 {
+            color: var(--primary-green);
+            margin-bottom: 1rem;
+        }
+
+        .info-card ul {
+            list-style: none;
+            padding-left: 1.5rem;
+        }
+
+        .info-card li {
+            margin: 1rem 0;
+            position: relative;
+        }
+
+        .info-card li::before {
+            content: "✓";
+            color: var(--secondary-green);
+            position: absolute;
+            left: -1.5rem;
+        }
+
+        .cta-section {
+            text-align: center;
+            margin: 3rem 0;
+        }
+
+        .cta-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            background: var(--accent-orange);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 6px;
+            transition: background 0.3s ease;
+        }
+
+        .cta-button:hover {
+            background: #F57C00;
+        }
+
+        @media (max-width: 768px) {
+            .form-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -12,37 +162,73 @@
     </header>
 
     <main>
+        <div class="content-section">
+            <h2>Transform Your Land's Potential</h2>
+            <div class="info-card">
+                <h3>Why Land Transformation?</h3>
+                <ul>
+                    <li>Convert barren/rocky land into fertile agricultural fields</li>
+                    <li>Improve soil health and water retention capacity</li>
+                    <li>Increase land productivity and crop yield</li>
+                    <li>Create sustainable farming ecosystems</li>
+                </ul>
+            </div>
+
+            <div class="info-card">
+                <h3>Organic Transformation Benefits</h3>
+                <ul>
+                    <li>Chemical-free farming practices</li>
+                    <li>Improved soil biodiversity</li>
+                    <li>Higher premium market value for produce</li>
+                    <li>Long-term sustainable land use</li>
+                </ul>
+                <div class="cta-section">
+                    <a href="organic-farming.html" class="cta-button">
+                        <i class="fas fa-leaf"></i>
+                        Learn Organic Farming Methods
+                    </a>
+                </div>
+            </div>
+        </div>
+
         <section class="form-section">
-            <h2>Fill the Form for Land Transformation</h2>
-            <form id="land-form" onsubmit="handleSubmit(event)">
-                <label for="name">Farmer's Name:</label>
-                <input type="text" id="name" name="name" placeholder="Enter your name" required>
+            <div class="content-section">
+                <h2>Land Transformation Consultation</h2>
+                <form id="land-form" onsubmit="handleSubmit(event)">
+                    <label for="name">Farmer's Name:</label>
+                    <input type="text" id="name" name="name" placeholder="Enter your name" required>
 
-                <label for="land">No. of Acres of Land:</label>
-                <input type="number" id="land" name="land" placeholder="Enter land area in acres" required>
+                    <label for="land">Land Area (Acres):</label>
+                    <input type="number" id="land" name="land" placeholder="Enter land area" required>
 
-                <label for="water">Nearby Water Availability:</label>
-                <select id="water" name="water" required>
-                    <option value="" disabled selected>Select an option</option>
-                    <option value="River">River</option>
-                    <option value="Well">Well</option>
-                    <option value="Pond">Pond</option>
-                    <option value="None">None</option>
-                </select>
+                    <label for="water">Water Source:</label>
+                    <select id="water" name="water" required>
+                        <option value="" disabled selected>Select water source</option>
+                        <option value="River">River</option>
+                        <option value="Well">Well</option>
+                        <option value="Pond">Pond</option>
+                        <option value="None">None</option>
+                    </select>
 
-                <button type="submit">Submit</button>
-            </form>
-        </section>
+                    <button type="submit">
+                        <i class="fas fa-paper-plane"></i>
+                        Submit Request
+                    </button>
+                </form>
+            </div>
 
-        <section class="response-section" id="response-section" style="display: none;">
-            <h2>Thank You!</h2>
-            <p>Your response has been recorded, and soon you will be consulted by our experts.</p>
+            <div class="content-section" id="response-section" style="display: none;">
+                <h2>Thank You for Your Submission!</h2>
+                <p>Our agricultural experts will contact you within 48 hours with:</p>
+                <ul class="info-list">
+                    <li>Custom land analysis report</li>
+                    <li>Transformation roadmap</li>
+                    <li>Organic farming recommendations</li>
+                    <li>Government scheme information</li>
+                </ul>
+            </div>
         </section>
     </main>
-
-    <footer>
-        <p>&copy; 2025 Land Transformation Portal. All rights reserved.</p>
-    </footer>
 
     <script>
         function handleSubmit(event) {
