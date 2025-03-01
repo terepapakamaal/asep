@@ -189,6 +189,12 @@
       firebase.initializeApp(firebaseConfig);
       auth = firebase.auth();
       db = firebase.firestore();
+    // Add this block for automatic redirect
+      auth.onAuthStateChanged((user) => {
+        if (user) {
+          window.location.href = 'homepage.html';
+        }
+      });
     } catch (error) {
       console.error("Firebase initialization failed", error);
     }
