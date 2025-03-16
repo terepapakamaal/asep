@@ -117,6 +117,19 @@
             animation: fadeIn 0.5s ease forwards;
         }
 
+        .forecast-container {
+            background: var(--card-bg);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            margin: 2rem auto;
+            max-width: 800px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+            backdrop-filter: blur(12px);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.5s ease forwards;
+        }
+
         @keyframes fadeIn {
             to {
                 opacity: 1;
@@ -148,6 +161,25 @@
 
         .weather-item:hover {
             transform: translateY(-5px);
+        }
+
+        .forecast-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .forecast-item {
+            background: var(--glass-effect);
+            padding: 1rem;
+            border-radius: 1rem;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .forecast-item:hover {
+            transform: translateY(-3px);
         }
 
         .weather-icon {
@@ -229,34 +261,55 @@
                 <!-- Weather details will be populated here -->
             </div>
         </div>
+
+        <div class="forecast-container" id="forecast" style="display: none;">
+            <h3>5-Day Forecast</h3>
+            <div class="forecast-items" id="forecast-items"></div>
+        </div>
     </div>
 
     <script>
         async function getWeather() {
             const cityName = document.getElementById('city-name').value;
-            const apiKey = '2ee0185414faa264f68fbf7617d0957e';
-            const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=${apiKey}&units=metric`;
-
+            const apiKey = '2ee0185414faa264f68fbf7617d0957e'; // Replace with your actual API key
+            const currentUrl = `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=${apiKey}&units=metric`;
+            const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${cityName}&appid=${apiKey}&units=metric`;
+    
             try {
-                const response = await fetch(apiUrl);
-                if (!response.ok) throw new Error('City not found');
+                // Show loading state
+                const searchBtn = document.querySelector('.search-button');
+                searchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
                 
-                const data = await response.json();
-                displayWeather(data);
+                const [currentResponse, forecastResponse] = await Promise.all([
+                    fetch(currentUrl),
+                    fetch(forecastUrl)
+                ]);
+    
+                if (!currentResponse.ok) throw new Error(`Current weather error: ${currentResponse.statusText}`);
+                if (!forecastResponse.ok) throw new Error(`Forecast error: ${forecastResponse.statusText}`);
+    
+                const currentData = await currentResponse.json();
+                const forecastData = await forecastResponse.json();
+    
+                displayWeather(currentData);
+                displayForecast(forecastData);
+                document.getElementById('error-message').style.display = 'none';
             } catch (error) {
                 showError(error.message);
+            } finally {
+                // Reset search button
+                const searchBtn = document.querySelector('.search-button');
+                searchBtn.innerHTML = '<i class="fas fa-search"></i> Search';
             }
         }
-
+    
         function displayWeather(data) {
             const weatherCard = document.getElementById('weather');
             const detailsContainer = document.getElementById('weather-details');
             
-            // Update basic info
             document.getElementById('city-title').textContent = `${data.name}, ${data.sys.country}`;
             document.getElementById('temperature').textContent = `${Math.round(data.main.temp)}°C`;
-
-            // Create weather details
+    
             const weatherItems = [
                 { icon: 'fa-droplet', label: 'Humidity', value: `${data.main.humidity}%` },
                 { icon: 'fa-wind', label: 'Wind', value: `${data.wind.speed} m/s` },
@@ -265,7 +318,7 @@
                 { icon: 'fa-moon', label: 'Sunset', value: new Date(data.sys.sunset * 1000).toLocaleTimeString() },
                 { icon: 'fa-cloud-rain', label: 'Rain', value: data.rain ? `${data.rain['1h']}mm` : '0mm' }
             ];
-
+    
             detailsContainer.innerHTML = weatherItems.map(item => `
                 <div class="weather-item">
                     <i class="fas ${item.icon} weather-icon"></i>
@@ -273,27 +326,87 @@
                     <p>${item.value}</p>
                 </div>
             `).join('');
-
-            // Update time
+    
             document.getElementById('current-time').textContent = new Date().toLocaleTimeString();
-            
-            // Show weather card
             weatherCard.style.display = 'block';
-            document.getElementById('error-message').style.display = 'none';
         }
-
+    
+        function displayForecast(data) {
+            const forecastContainer = document.getElementById('forecast');
+            const forecastItems = document.getElementById('forecast-items');
+            forecastItems.innerHTML = '';
+    
+            // Group forecasts by day
+            const dailyForecasts = {};
+            data.list.forEach(item => {
+                const date = new Date(item.dt * 1000);
+                const dayKey = date.toLocaleDateString('en-US', { weekday: 'long' });
+                
+                if (!dailyForecasts[dayKey]) {
+                    dailyForecasts[dayKey] = {
+                        temp: Math.round(item.main.temp),
+                        icon: getWeatherIcon(item.weather[0].main),
+                        condition: item.weather[0].main,
+                        date: date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+                    };
+                }
+            });
+    
+            // Display next 5 days
+            Object.keys(dailyForecasts).slice(0, 5).forEach(dayKey => {
+                const day = dailyForecasts[dayKey];
+                const forecastItem = document.createElement('div');
+                forecastItem.className = 'forecast-item';
+                forecastItem.innerHTML = `
+                    <div class="forecast-day">${day.date}</div>
+                    <i class="fas ${day.icon} weather-icon"></i>
+                    <div style="font-size: 1.25rem; font-weight: 600;">${day.temp}°C</div>
+                    <div style="font-size: 0.9rem; color: var(--text)">${day.condition}</div>
+                `;
+                forecastItems.appendChild(forecastItem);
+            });
+    
+            forecastContainer.style.display = 'block';
+        }
+    
+        function getWeatherIcon(condition) {
+            const icons = {
+                'Clear': 'fa-sun',
+                'Clouds': 'fa-cloud',
+                'Rain': 'fa-cloud-rain',
+                'Thunderstorm': 'fa-bolt',
+                'Snow': 'fa-snowflake',
+                'Mist': 'fa-smog',
+                'Smoke': 'fa-smog',
+                'Haze': 'fa-smog',
+                'Dust': 'fa-smog',
+                'Fog': 'fa-smog',
+                'Sand': 'fa-smog',
+                'Ash': 'fa-smog',
+                'Squall': 'fa-wind',
+                'Tornado': 'fa-poo-storm'
+            };
+            return icons[condition] || 'fa-cloud';
+        }
+    
         function showError(message) {
             const errorEl = document.getElementById('error-message');
-            errorEl.textContent = message;
+            errorEl.textContent = `Error: ${message}`;
             errorEl.style.display = 'block';
             document.getElementById('weather').style.display = 'none';
+            document.getElementById('forecast').style.display = 'none';
         }
-
+    
         // Update time every second
         setInterval(() => {
             const timeEl = document.getElementById('current-time');
             if (timeEl) timeEl.textContent = new Date().toLocaleTimeString();
         }, 1000);
+    
+        // Add enter key support
+        document.getElementById('city-name').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') getWeather();
+        });
     </script>
 </body>
 </html>
