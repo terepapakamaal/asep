@@ -303,33 +303,47 @@
             }
         }
     
-        function displayWeather(data) {
-            const weatherCard = document.getElementById('weather');
-            const detailsContainer = document.getElementById('weather-details');
+          function displayWeather(data) {
+        const weatherCard = document.getElementById('weather');
+        const detailsContainer = document.getElementById('weather-details');
+        
+        document.getElementById('city-title').textContent = `${data.name}, ${data.sys.country}`;
+        document.getElementById('temperature').textContent = `${Math.round(data.main.temp)}°C`;
+
+        // Improved rain data handling
+        const getRainValue = () => {
+            if (!data.rain) return '0 mm';
             
-            document.getElementById('city-title').textContent = `${data.name}, ${data.sys.country}`;
-            document.getElementById('temperature').textContent = `${Math.round(data.main.temp)}°C`;
-    
-            const weatherItems = [
-                { icon: 'fa-droplet', label: 'Humidity', value: `${data.main.humidity}%` },
-                { icon: 'fa-wind', label: 'Wind', value: `${data.wind.speed} m/s` },
-                { icon: 'fa-gauge-high', label: 'Pressure', value: `${data.main.pressure} hPa` },
-                { icon: 'fa-sun', label: 'Sunrise', value: new Date(data.sys.sunrise * 1000).toLocaleTimeString() },
-                { icon: 'fa-moon', label: 'Sunset', value: new Date(data.sys.sunset * 1000).toLocaleTimeString() },
-                { icon: 'fa-cloud-rain', label: 'Rain', value: data.rain ? `${data.rain['1h']}mm` : '0mm' }
-            ];
-    
-            detailsContainer.innerHTML = weatherItems.map(item => `
-                <div class="weather-item">
-                    <i class="fas ${item.icon} weather-icon"></i>
-                    <h3>${item.label}</h3>
-                    <p>${item.value}</p>
-                </div>
-            `).join('');
-    
-            document.getElementById('current-time').textContent = new Date().toLocaleTimeString();
-            weatherCard.style.display = 'block';
-        }
+            // Check for different possible rain measurement formats
+            const measurements = [];
+            if (data.rain['1h']) measurements.push(`${data.rain['1h']} mm (1h)`);
+            if (data.rain['3h']) measurements.push(`${data.rain['3h']} mm (3h)`);
+            if (data.rain['today']) measurements.push(`${data.rain['today']} mm (today)`);
+            
+            return measurements.length > 0 ? measurements.join(', ') : '0 mm';
+        };
+
+        const weatherItems = [
+            { icon: 'fa-droplet', label: 'Humidity', value: `${data.main.humidity}%` },
+            { icon: 'fa-wind', label: 'Wind', value: `${data.wind.speed} m/s` },
+            { icon: 'fa-gauge-high', label: 'Pressure', value: `${data.main.pressure} hPa` },
+            { icon: 'fa-sun', label: 'Sunrise', value: new Date(data.sys.sunrise * 1000).toLocaleTimeString() },
+            { icon: 'fa-moon', label: 'Sunset', value: new Date(data.sys.sunset * 1000).toLocaleTimeString() },
+            { icon: 'fa-cloud-rain', label: 'Precipitation', value: getRainValue() }
+        ];
+
+        detailsContainer.innerHTML = weatherItems.map(item => `
+            <div class="weather-item">
+                <i class="fas ${item.icon} weather-icon"></i>
+                <h3>${item.label}</h3>
+                <p>${item.value}</p>
+            </div>
+        `).join('');
+
+        document.getElementById('current-time').textContent = new Date().toLocaleTimeString();
+        weatherCard.style.display = 'block';
+    }
+
     
         function displayForecast(data) {
             const forecastContainer = document.getElementById('forecast');
